@@ -1,6 +1,577 @@
 {
   "script": "Chakma",
-  "version": "1.0.0",
-  "total_classes": 0,
-  "classes": []
+  "iso_15924": "Cakm",
+  "unicode_range": "U+11100..U+1114F",
+  "schema_version": "1.0.0",
+  "total_classes": 71,
+  "classes": [
+    {
+      "id": 0,
+      "unicode": "U+11100",
+      "character": "𑄀",
+      "name": "CHAKMA SIGN CANDRABINDU",
+      "category": "signs_and_modifiers",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 1,
+      "unicode": "U+11101",
+      "character": "𑄁",
+      "name": "CHAKMA SIGN ANUSVARA",
+      "category": "signs_and_modifiers",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 2,
+      "unicode": "U+11102",
+      "character": "𑄂",
+      "name": "CHAKMA SIGN VISARGA",
+      "category": "signs_and_modifiers",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 3,
+      "unicode": "U+11103",
+      "character": "𑄃",
+      "name": "CHAKMA LETTER AA",
+      "category": "independent_vowels",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 4,
+      "unicode": "U+11104",
+      "character": "𑄄",
+      "name": "CHAKMA LETTER I",
+      "category": "independent_vowels",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 5,
+      "unicode": "U+11105",
+      "character": "𑄅",
+      "name": "CHAKMA LETTER U",
+      "category": "independent_vowels",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 6,
+      "unicode": "U+11106",
+      "character": "𑄆",
+      "name": "CHAKMA LETTER E",
+      "category": "independent_vowels",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 7,
+      "unicode": "U+11107",
+      "character": "𑄇",
+      "name": "CHAKMA LETTER KAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 8,
+      "unicode": "U+11108",
+      "character": "𑄈",
+      "name": "CHAKMA LETTER KHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 9,
+      "unicode": "U+11109",
+      "character": "𑄉",
+      "name": "CHAKMA LETTER GAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 10,
+      "unicode": "U+1110A",
+      "character": "𑄊",
+      "name": "CHAKMA LETTER GHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 11,
+      "unicode": "U+1110B",
+      "character": "𑄋",
+      "name": "CHAKMA LETTER NGAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 12,
+      "unicode": "U+1110C",
+      "character": "𑄌",
+      "name": "CHAKMA LETTER CAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 13,
+      "unicode": "U+1110D",
+      "character": "𑄍",
+      "name": "CHAKMA LETTER CHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 14,
+      "unicode": "U+1110E",
+      "character": "𑄎",
+      "name": "CHAKMA LETTER JAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 15,
+      "unicode": "U+1110F",
+      "character": "𑄏",
+      "name": "CHAKMA LETTER JHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 16,
+      "unicode": "U+11110",
+      "character": "𑄐",
+      "name": "CHAKMA LETTER NYAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 17,
+      "unicode": "U+11111",
+      "character": "𑄑",
+      "name": "CHAKMA LETTER TTAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 18,
+      "unicode": "U+11112",
+      "character": "𑄒",
+      "name": "CHAKMA LETTER TTHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 19,
+      "unicode": "U+11113",
+      "character": "𑄓",
+      "name": "CHAKMA LETTER DDAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 20,
+      "unicode": "U+11114",
+      "character": "𑄔",
+      "name": "CHAKMA LETTER DDHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 21,
+      "unicode": "U+11115",
+      "character": "𑄕",
+      "name": "CHAKMA LETTER NNAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 22,
+      "unicode": "U+11116",
+      "character": "𑄖",
+      "name": "CHAKMA LETTER TAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 23,
+      "unicode": "U+11117",
+      "character": "𑄗",
+      "name": "CHAKMA LETTER THAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 24,
+      "unicode": "U+11118",
+      "character": "𑄘",
+      "name": "CHAKMA LETTER DAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 25,
+      "unicode": "U+11119",
+      "character": "𑄙",
+      "name": "CHAKMA LETTER DHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 26,
+      "unicode": "U+1111A",
+      "character": "𑄚",
+      "name": "CHAKMA LETTER NAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 27,
+      "unicode": "U+1111B",
+      "character": "𑄛",
+      "name": "CHAKMA LETTER PAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 28,
+      "unicode": "U+1111C",
+      "character": "𑄜",
+      "name": "CHAKMA LETTER PHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 29,
+      "unicode": "U+1111D",
+      "character": "𑄝",
+      "name": "CHAKMA LETTER BAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 30,
+      "unicode": "U+1111E",
+      "character": "𑄞",
+      "name": "CHAKMA LETTER BHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 31,
+      "unicode": "U+1111F",
+      "character": "𑄟",
+      "name": "CHAKMA LETTER MAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 32,
+      "unicode": "U+11120",
+      "character": "𑄠",
+      "name": "CHAKMA LETTER YYAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 33,
+      "unicode": "U+11121",
+      "character": "𑄡",
+      "name": "CHAKMA LETTER YAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 34,
+      "unicode": "U+11122",
+      "character": "𑄢",
+      "name": "CHAKMA LETTER RAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 35,
+      "unicode": "U+11123",
+      "character": "𑄣",
+      "name": "CHAKMA LETTER LAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 36,
+      "unicode": "U+11124",
+      "character": "𑄤",
+      "name": "CHAKMA LETTER WAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 37,
+      "unicode": "U+11125",
+      "character": "𑄥",
+      "name": "CHAKMA LETTER SAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 38,
+      "unicode": "U+11126",
+      "character": "𑄦",
+      "name": "CHAKMA LETTER HAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 39,
+      "unicode": "U+11127",
+      "character": "𑄧",
+      "name": "CHAKMA VOWEL SIGN A",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 40,
+      "unicode": "U+11128",
+      "character": "𑄨",
+      "name": "CHAKMA VOWEL SIGN I",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 41,
+      "unicode": "U+11129",
+      "character": "𑄩",
+      "name": "CHAKMA VOWEL SIGN II",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 42,
+      "unicode": "U+1112A",
+      "character": "𑄪",
+      "name": "CHAKMA VOWEL SIGN U",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 43,
+      "unicode": "U+1112B",
+      "character": "𑄫",
+      "name": "CHAKMA VOWEL SIGN UU",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 44,
+      "unicode": "U+1112C",
+      "character": "𑄬",
+      "name": "CHAKMA VOWEL SIGN E",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mc"
+    },
+    {
+      "id": 45,
+      "unicode": "U+1112D",
+      "character": "𑄭",
+      "name": "CHAKMA VOWEL SIGN AI",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 46,
+      "unicode": "U+1112E",
+      "character": "𑄮",
+      "name": "CHAKMA VOWEL SIGN O",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 47,
+      "unicode": "U+1112F",
+      "character": "𑄯",
+      "name": "CHAKMA VOWEL SIGN AU",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 48,
+      "unicode": "U+11130",
+      "character": "𑄰",
+      "name": "CHAKMA VOWEL SIGN OI",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 49,
+      "unicode": "U+11131",
+      "character": "𑄱",
+      "name": "CHAKMA O MARK",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 50,
+      "unicode": "U+11132",
+      "character": "𑄲",
+      "name": "CHAKMA AU MARK",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 51,
+      "unicode": "U+11133",
+      "character": "𑄳",
+      "name": "CHAKMA VIRAMA",
+      "category": "signs_and_modifiers",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 52,
+      "unicode": "U+11134",
+      "character": "𑄴",
+      "name": "CHAKMA MAAYYAA",
+      "category": "signs_and_modifiers",
+      "unicode_general_category": "Mn"
+    },
+    {
+      "id": 53,
+      "unicode": "U+11136",
+      "character": "𑄶",
+      "name": "CHAKMA DIGIT ZERO",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 54,
+      "unicode": "U+11137",
+      "character": "𑄷",
+      "name": "CHAKMA DIGIT ONE",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 55,
+      "unicode": "U+11138",
+      "character": "𑄸",
+      "name": "CHAKMA DIGIT TWO",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 56,
+      "unicode": "U+11139",
+      "character": "𑄹",
+      "name": "CHAKMA DIGIT THREE",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 57,
+      "unicode": "U+1113A",
+      "character": "𑄺",
+      "name": "CHAKMA DIGIT FOUR",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 58,
+      "unicode": "U+1113B",
+      "character": "𑄻",
+      "name": "CHAKMA DIGIT FIVE",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 59,
+      "unicode": "U+1113C",
+      "character": "𑄼",
+      "name": "CHAKMA DIGIT SIX",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 60,
+      "unicode": "U+1113D",
+      "character": "𑄽",
+      "name": "CHAKMA DIGIT SEVEN",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 61,
+      "unicode": "U+1113E",
+      "character": "𑄾",
+      "name": "CHAKMA DIGIT EIGHT",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 62,
+      "unicode": "U+1113F",
+      "character": "𑄿",
+      "name": "CHAKMA DIGIT NINE",
+      "category": "digits",
+      "unicode_general_category": "Nd"
+    },
+    {
+      "id": 63,
+      "unicode": "U+11140",
+      "character": "𑅀",
+      "name": "CHAKMA SECTION MARK",
+      "category": "punctuation",
+      "unicode_general_category": "Po"
+    },
+    {
+      "id": 64,
+      "unicode": "U+11141",
+      "character": "𑅁",
+      "name": "CHAKMA DANDA",
+      "category": "punctuation",
+      "unicode_general_category": "Po"
+    },
+    {
+      "id": 65,
+      "unicode": "U+11142",
+      "character": "𑅂",
+      "name": "CHAKMA DOUBLE DANDA",
+      "category": "punctuation",
+      "unicode_general_category": "Po"
+    },
+    {
+      "id": 66,
+      "unicode": "U+11143",
+      "character": "𑅃",
+      "name": "CHAKMA QUESTION MARK",
+      "category": "punctuation",
+      "unicode_general_category": "Po"
+    },
+    {
+      "id": 67,
+      "unicode": "U+11144",
+      "character": "𑅄",
+      "name": "CHAKMA LETTER LHAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    },
+    {
+      "id": 68,
+      "unicode": "U+11145",
+      "character": "𑅅",
+      "name": "CHAKMA VOWEL SIGN AA",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mc"
+    },
+    {
+      "id": 69,
+      "unicode": "U+11146",
+      "character": "𑅆",
+      "name": "CHAKMA VOWEL SIGN EI",
+      "category": "dependent_vowels",
+      "unicode_general_category": "Mc"
+    },
+    {
+      "id": 70,
+      "unicode": "U+11147",
+      "character": "𑅇",
+      "name": "CHAKMA LETTER VAA",
+      "category": "consonants",
+      "unicode_general_category": "Lo"
+    }
+  ]
 }

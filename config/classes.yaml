@@ -1,25 +1,43 @@
-# Chakma Script Character Classes Specification Schema
-# Unicode Range: U+11100 - U+1114F (Chakma Block)
+# Chakma Script Character Classes Specification & Registry
+# Canonical Source of Truth: corpus/charset.json
+# Standard: Unicode Standard (Chakma Block: U+11100 .. U+1114F)
 
 metadata:
   script_name: "Chakma"
   iso_15924: "Cakm"
   unicode_block: "U+11100..U+1114F"
   schema_version: "1.0.0"
+  total_classes: 71
+  classes_file: "corpus/charset.json"
 
-class_groups:
+categories:
+  signs_and_modifiers:
+    description: "Candrabindu, Anusvara, Visarga, Virama, Maayyaa"
+    count: 5
+    unicode_subrange: "U+11100..U+11102, U+11133..U+11134"
   independent_vowels:
-    description: "Independent vowel letters (U+11103..U+11106)"
+    description: "Independent vowel letters (AA, I, U, E)"
+    count: 4
+    unicode_subrange: "U+11103..U+11106"
   consonants:
-    description: "Consonant letters (U+11107..U+11126)"
-  dependent_vowel_signs:
-    description: "Dependent vowel signs / matras (U+11127..U+11132)"
-  various_signs:
-    description: "Candrabindu, Anusvara, Visarga, Virama, Maayyaa (U+11100..U+11102, U+11133..U+11134)"
+    description: "Consonant letters (KAA through HAA, plus LHAA and VAA)"
+    count: 34
+    unicode_subrange: "U+11107..U+11126, U+11144, U+11147"
+  dependent_vowels:
+    description: "Dependent vowel signs / matras (A, I, II, U, UU, E, AI, O, AU, OI, O MARK, AU MARK, AA, EI)"
+    count: 14
+    unicode_subrange: "U+11127..U+11132, U+11145..U+11146"
   digits:
-    description: "Chakma digits 0-9 (U+11136..U+1113F)"
+    description: "Chakma decimal digits 0-9"
+    count: 10
+    unicode_subrange: "U+11136..U+1113F"
   punctuation:
-    description: "Chakma punctuation (U+11140..U+11143)"
+    description: "Chakma punctuation (Section Mark, Danda, Double Danda, Question Mark)"
+    count: 4
+    unicode_subrange: "U+11140..U+11143"
 
-classes_file: "corpus/charset.json"
-total_classes_placeholder: 0
+registry_invariants:
+  id_indexing: "0-indexed, contiguous (0 to 70)"
+  id_uniqueness: true
+  unicode_uniqueness: true
+  stability: "Locked after Stage 02 approval"

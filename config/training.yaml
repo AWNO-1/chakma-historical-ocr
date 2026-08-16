@@ -1,0 +1,33 @@
+# YOLO Character Detection Training Configuration
+
+model:
+  architecture: "yolo11n.pt"  # Baseline YOLO nano detector
+  task: "detect"
+  pretrained: true
+
+dataset:
+  path: "data/synthetic"  # Relative root for dataset
+  train: "images/train"
+  val: "images/val"
+  test: "images/test"
+
+hyperparameters:
+  epochs: 100
+  batch_size: 16
+  imgsz: 1024
+  optimizer: "AdamW"
+  lr0: 0.001
+  lrf: 0.01
+  weight_decay: 0.0005
+  patience: 20
+  workers: 4
+  device: "auto"
+
+evaluation:
+  conf_threshold: 0.25
+  iou_threshold: 0.6
+  metrics:
+    - mAP50
+    - mAP50-95
+    - precision
+    - recall

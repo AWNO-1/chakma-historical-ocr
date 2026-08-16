@@ -1,0 +1,25 @@
+# Chakma Script Character Classes Specification Schema
+# Unicode Range: U+11100 - U+1114F (Chakma Block)
+
+metadata:
+  script_name: "Chakma"
+  iso_15924: "Cakm"
+  unicode_block: "U+11100..U+1114F"
+  schema_version: "1.0.0"
+
+class_groups:
+  independent_vowels:
+    description: "Independent vowel letters (U+11103..U+11106)"
+  consonants:
+    description: "Consonant letters (U+11107..U+11126)"
+  dependent_vowel_signs:
+    description: "Dependent vowel signs / matras (U+11127..U+11132)"
+  various_signs:
+    description: "Candrabindu, Anusvara, Visarga, Virama, Maayyaa (U+11100..U+11102, U+11133..U+11134)"
+  digits:
+    description: "Chakma digits 0-9 (U+11136..U+1113F)"
+  punctuation:
+    description: "Chakma punctuation (U+11140..U+11143)"
+
+classes_file: "corpus/charset.json"
+total_classes_placeholder: 0

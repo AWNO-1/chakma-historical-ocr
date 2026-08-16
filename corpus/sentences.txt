@@ -1,0 +1,2 @@
+# Chakma Corpus Sentences (Initial Placeholder for Stage 01)
+# Format: UTF-8 Chakma text lines

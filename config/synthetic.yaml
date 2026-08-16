@@ -1,0 +1,50 @@
+# Synthetic Data Generation Configuration
+
+generation:
+  canvas_width: 1024
+  canvas_height: 1024
+  min_lines_per_page: 5
+  max_lines_per_page: 15
+  min_chars_per_line: 10
+  max_chars_per_line: 40
+  default_font_size: 32
+  min_font_size: 24
+  max_font_size: 48
+  line_spacing_ratio: 1.5
+  char_spacing_ratio: 0.1
+
+backgrounds:
+  categories:
+    - paper
+    - parchment
+    - manuscript
+    - bamboo
+    - miscellaneous
+  base_dir: "data/backgrounds"
+  fallback_color: [245, 238, 220]  # Off-white / light aged paper RGB
+
+augmentations:
+  enabled: true
+  gaussian_blur:
+    prob: 0.5
+    kernel_size: [3, 5]
+  gaussian_noise:
+    prob: 0.4
+    var_limit: [10.0, 50.0]
+  perspective_transform:
+    prob: 0.3
+    scale: [0.02, 0.05]
+  ink_bleed:
+    prob: 0.3
+    kernel_size: 3
+  aging_stains:
+    prob: 0.4
+    intensity: [0.1, 0.3]
+  shadows:
+    prob: 0.3
+    num_shadows: [1, 3]
+
+output:
+  image_format: "jpg"
+  label_format: "yolo"  # class_id center_x center_y width height (normalized)
+  save_metadata: true

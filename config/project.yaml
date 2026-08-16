@@ -1,0 +1,35 @@
+# Chakma Historical OCR - Main Project Configuration
+
+project:
+  name: "Chakma Historical OCR"
+  slug: "chakma-historical-ocr"
+  version: "0.1.0"
+  description: "YOLO-based Character Detection and Deterministic Text Reconstruction for Chakma Historical Manuscripts"
+  author: "Chakma OCR Research Team"
+
+reproducibility:
+  seed: 42
+  deterministic: true
+  benchmark: false
+
+environment:
+  device: "auto"  # options: auto, cuda, cpu
+  num_workers: 4
+
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s | %(levelname)-8s | %(name)s:%(funcName)s:%(lineno)d - %(message)s"
+  date_fmt: "%Y-%m-%d %H:%M:%S"
+  log_dir: "logs"
+  save_to_file: true
+
+paths:
+  corpus_dir: "corpus"
+  config_dir: "config"
+  fonts_dir: "fonts"
+  data_dir: "data"
+  backgrounds_dir: "data/backgrounds"
+  synthetic_dir: "data/synthetic"
+  real_dir: "data/real"
+  experiments_dir: "experiments"
+  docs_dir: "docs"

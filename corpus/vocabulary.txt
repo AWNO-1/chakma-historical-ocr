@@ -1,2 +1,33 @@
-# Chakma Vocabulary Words (Initial Placeholder for Stage 01)
-# Format: UTF-8 Chakma word list
+# Chakma Sample Vocabulary
+# Format: One UTF-8 Chakma word per line (comments and empty lines ignored)
+
+𑄌𑄋𑄴𑄟
+𑄟𑄚𑄪𑄌𑄴
+𑄢𑄎
+𑄘𑄬𑄌𑄴
+𑄞𑄌𑄴
+𑄇𑄟𑄴
+𑄉𑄌𑄴
+𑄛𑄧𑄖𑄴
+𑄇𑄨𑄖𑄛𑄴
+𑄃𑄟𑄢𑄴
+𑄖𑄢𑄴
+𑄛𑄮𑄠𑄴
+𑄘𑄨𑄚𑄴
+𑄢𑄭𑄖𑄴
+𑄝𑄧𑄏𑄧𑄢𑄴
+𑄖𑄧𑄣𑄬
+𑄅𑄉𑄮
+𑄟𑄧𑄚𑄴
+𑄇𑄗
+𑄈𑄪𑄌𑄨
+𑄥𑄋𑄴𑄇𑄳𑄢𑄨𑄖𑄨
+𑄉𑄧𑄢𑄧𑄛𑄴
+𑄎𑄨𑄚𑄨𑄌𑄴
+𑄥𑄨𑄊𑄮𑄚𑄴
+𑄝𑄌𑄬
+𑄣𑄬𑄈𑄨
+𑄇𑄧𑄠𑄴
+𑄉𑄧𑄢𑄬
+𑄥𑄪𑄚𑄨
+𑄦𑄧𑄠𑄴

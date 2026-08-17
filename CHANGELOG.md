@@ -4,6 +4,17 @@ All notable changes to the Chakma Historical OCR project will be documented in t
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.3.0] - 2026-08-17 - Stage 03: Chakma Corpus Engine
+
+### Added
+- Authoritative `CorpusEngine` in `generator/corpus_engine.py` with support for Unicode NFC normalization, comment and empty line suppression, and deterministic random sampling.
+- Authentic sample Chakma corpus files in `corpus/sentences.txt` and `corpus/vocabulary.txt`.
+- Multi-tier validation in `CorpusEngine.validate()` checking total sentences, vocabulary count, character frequency distribution, and detecting unsupported foreign characters.
+- Expanded test suite `tests/test_corpus.py` with 8 dedicated unit tests covering loading, empty line handling, NFC normalization, seed reproducibility, character extraction, and corrupt dataset error handling (30 tests total in project suite).
+- Demonstration utility `utils/demo_corpus.py` for verifying real output samples and character distribution.
+- Architectural Decision Record `ADR-003-corpus-engine.md`.
+- Documentation report `docs/stages/stage_03_corpus.md`.
+
 ## [0.2.0] - 2026-08-17 - Stage 02: Chakma Charset and Class Registry
 
 ### Added

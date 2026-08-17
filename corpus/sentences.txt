@@ -1,2 +1,13 @@
-# Chakma Corpus Sentences (Initial Placeholder for Stage 01)
-# Format: UTF-8 Chakma text lines
+# Chakma Sample Sentences
+# Format: One sentence per line (lines starting with # and empty lines are ignored)
+
+𑄟𑄚𑄪𑄌𑄴 𑄃𑄟𑄢𑄴 𑄘𑄬𑄌𑄴 𑄌𑄋𑄴𑄟 𑄞𑄌𑄴 𑄇𑄧𑄠𑄴𑅁
+𑄢𑄎 𑄘𑄬𑄌𑄮𑄖𑄴 𑄇𑄟𑄴 𑄉𑄧𑄢𑄬𑅁
+𑄃𑄟𑄢𑄴 𑄇𑄨𑄖𑄛𑄴 𑄖𑄧𑄣𑄬 𑄃𑄊𑄬𑅁
+𑄅𑄉𑄮 𑄟𑄚𑄪𑄌𑄴 𑄉𑄌𑄮𑄢𑄴 𑄖𑄧𑄣𑄬 𑄝𑄧𑄠𑄴𑅁
+𑄌𑄋𑄴𑄟 𑄥𑄋𑄴𑄇𑄳𑄢𑄨𑄖𑄨 𑄃𑄢𑄴 𑄞𑄌𑄴 𑄃𑄟𑄢𑄴 𑄉𑄧𑄢𑄧𑄛𑄴𑅂
+𑄛𑄮𑄠𑄴 𑄛𑄧𑄢𑄨 𑄎𑄨𑄚𑄨𑄌𑄴 𑄥𑄨𑄊𑄮𑄚𑄴 𑄉𑄧𑄢𑄮𑅁
+𑄘𑄨𑄚𑄴 𑄢𑄭𑄖𑄴 𑄇𑄟𑄴 𑄉𑄧𑄢𑄨 𑄟𑄚𑄪𑄌𑄴 𑄝𑄌𑄬𑅁
+𑄖𑄢𑄴 𑄇𑄗 𑄥𑄪𑄚𑄨 𑄟𑄧𑄚𑄴 𑄈𑄪𑄌𑄨 𑄦𑄧𑄠𑄴𑅁
+𑄃𑄬 𑄇𑄨𑄖𑄛𑄴𑄈𑄚𑄴 𑄇𑄧𑄢𑄴 𑄃𑄊𑄬𑅃
+𑄷𑄸𑄹 𑄝𑄧𑄏𑄧𑄢𑄴 𑄃𑄉𑄬 𑄢𑄎 𑄃𑄬𑄟𑄳𑄦𑄚𑄴 𑄣𑄬𑄈𑄨 𑄉𑄨𑄠𑄬𑅂

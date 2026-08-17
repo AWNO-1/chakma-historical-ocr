@@ -1,0 +1,114 @@
+version: '1.0'
+min_coverage_threshold: 70.0
+total_fonts_discovered: 13
+total_fonts_valid: 12
+total_fonts_rejected: 1
+fonts:
+- id: chakma_unicode
+  name: Chakma Unicode
+  file: Chakma Unicode.ttf
+  path: fonts/validated/Chakma Unicode.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: chakmaunicode_bold
+  name: Chakma Unicode Bold
+  file: ChakmaUnicode-Bold.ttf
+  path: fonts/validated/ChakmaUnicode-Bold.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: chakmaunicode_bolditalic
+  name: Chakma Unicode Bold Italic
+  file: ChakmaUnicode-BoldItalic.ttf
+  path: fonts/validated/ChakmaUnicode-BoldItalic.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: CALLIGRAPHIC
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: chakmaunicode_italic
+  name: Chakma Unicode Italic
+  file: ChakmaUnicode-Italic.ttf
+  path: fonts/validated/ChakmaUnicode-Italic.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: CALLIGRAPHIC
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: chakmaunicode_regular
+  name: Chakma Unicode Regular
+  file: ChakmaUnicode-Regular.ttf
+  path: fonts/validated/ChakmaUnicode-Regular.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: nirmala
+  name: Nirmala UI
+  file: Nirmala.ttf
+  path: fonts/validated/Nirmala.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: nirmalab
+  name: Nirmala UI Bold
+  file: NirmalaB.ttf
+  path: fonts/validated/NirmalaB.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: nirmalas
+  name: Nirmala UI Semilight
+  file: NirmalaS.ttf
+  path: fonts/validated/NirmalaS.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: notosanschakma_google
+  name: Noto Sans Chakma Regular
+  file: NotoSansChakma-google.ttf
+  path: fonts/validated/NotoSansChakma-google.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: notosanschakma_regular
+  name: Noto Sans Chakma Regular
+  file: NotoSansChakma-Regular.ttf
+  path: fonts/validated/NotoSansChakma-Regular.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: notosanschakma_regular2
+  name: Noto Sans Chakma Regular
+  file: NotoSansChakma-Regular2.ttf
+  path: fonts/validated/NotoSansChakma-Regular2.ttf
+  coverage: full
+  coverage_percent: 100.0
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true
+- id: ribenguni_regular
+  name: RibengUni
+  file: RibengUni-Regular.ttf
+  path: fonts/validated/RibengUni-Regular.ttf
+  coverage: full
+  coverage_percent: 98.59
+  style: PRINT
+  shaping: TEXT_SHAPING_SUPPORTED
+  enabled_for_synthetic: true

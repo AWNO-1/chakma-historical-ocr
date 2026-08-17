@@ -192,6 +192,51 @@ class LineRenderer:
             return None, None
         return float(rows[0]), float(rows[-1] + 1)
 
+    @staticmethod
+    def _blend_ink_onto_canvas(page_canvas: Image.Image, line_img: Image.Image, paste_x: int, paste_y: int) -> None:
+        """
+        Subtractive ink-paper blending:
+        Absorbs ink into paper texture fibers using multiply and luminance modulation,
+        preventing flat/digital appearance and simulating physical quill-and-paper interaction.
+        """
+        line_w, line_h = line_img.size
+        page_w, page_h = page_canvas.size
+
+        x1 = max(0, paste_x)
+        y1 = max(0, paste_y)
+        x2 = min(page_w, paste_x + line_w)
+        y2 = min(page_h, paste_y + line_h)
+
+        if x1 >= x2 or y1 >= y2:
+            return
+
+        lx1 = x1 - paste_x
+        ly1 = y1 - paste_y
+        lx2 = lx1 + (x2 - x1)
+        ly2 = ly1 + (y2 - y1)
+
+        ink_crop = line_img.crop((lx1, ly1, lx2, ly2))
+        ink_arr = np.array(ink_crop).astype(np.float32)
+        alpha = (ink_arr[:, :, 3] / 255.0)[:, :, np.newaxis]
+
+        if np.max(alpha) < 0.01:
+            return
+
+        paper_crop = page_canvas.crop((x1, y1, x2, y2)).convert("RGBA")
+        paper_arr = np.array(paper_crop).astype(np.float32)
+
+        ink_rgb = ink_arr[:, :, :3]
+        paper_rgb = paper_arr[:, :, :3]
+
+        # Realistic Subtractive Multiply Ink Blending:
+        # Ink darkens underlying paper fibers according to alpha
+        blended_rgb = paper_rgb * (1.0 - alpha * (1.0 - ink_rgb / 255.0))
+        paper_arr[:, :, :3] = np.clip(blended_rgb, 0.0, 255.0)
+        paper_arr[:, :, 3] = np.maximum(paper_arr[:, :, 3], ink_arr[:, :, 3])
+
+        blended_crop = Image.fromarray(paper_arr.astype(np.uint8), mode="RGBA")
+        page_canvas.paste(blended_crop, (x1, y1))
+
     def measure_character(self, char: str, font: ImageFont.FreeTypeFont) -> Tuple[float, float, float, float]:
         """
         Measure exact bounding box offsets for a single character relative to (0, 0) anchor.
@@ -494,8 +539,8 @@ class LineRenderer:
                 padding=0,
             )
 
-            # Composite line onto page canvas
-            page_img.paste(r_line_single.image, (paste_x, paste_y), r_line_single.image)
+            # Composite line onto page canvas with realistic subtractive paper fiber blending
+            self._blend_ink_onto_canvas(page_img, r_line_single.image, paste_x, paste_y)
 
             # Shift every character's local_bbox by the paste offset → global_bbox
             global_chars: List[RenderedCharacter] = []

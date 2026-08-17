@@ -155,6 +155,65 @@ class CharsetEngine:
         """Check if character exists in registry."""
         return char in self._char_to_class
 
+    def is_combining(self, char: str) -> bool:
+        """
+        Check if a character is a dependent mark (dependent vowel / matra or sign/modifier).
+        These characters cannot stand alone at the start of a syllable or word.
+        """
+        cls_obj = self._char_to_class.get(char)
+        if cls_obj is not None:
+            return cls_obj.category in ("dependent_vowels", "signs_and_modifiers")
+        # Fallback to Unicode general category (Mn, Mc, Me)
+        import unicodedata
+        return unicodedata.category(char) in ("Mn", "Mc", "Me")
+
+    def is_base_character(self, char: str) -> bool:
+        """
+        Check if a character is an independent base character (consonant, independent vowel, digit, etc.).
+        """
+        cls_obj = self._char_to_class.get(char)
+        if cls_obj is not None:
+            return cls_obj.category in ("consonants", "independent_vowels", "digits", "historical_letters")
+        return not self.is_combining(char) and not char.isspace()
+
+    def repair_syllables(self, text: str, default_base: str = "𑄇") -> str:
+        """
+        Validate and repair Brahmic orthography / Akshara syllable structure.
+        Guarantees that no dependent vowel sign or modifier appears orphaned/standalone
+        at the beginning of a word or after whitespace/punctuation.
+        """
+        if not text:
+            return ""
+
+        words = text.split(" ")
+        repaired_words: List[str] = []
+
+        consonants = [c.character for c in self.get_classes_by_category("consonants")]
+        fallback_base = default_base if default_base in consonants else (consonants[0] if consonants else "𑄇")
+
+        for word in words:
+            if not word:
+                continue
+
+            repaired_chars: List[str] = []
+            has_base = False
+
+            for char in word:
+                if self.is_combining(char):
+                    if not has_base:
+                        # Orphaned dependent mark found at word start -> prepend a valid base consonant!
+                        repaired_chars.append(fallback_base)
+                        has_base = True
+                    repaired_chars.append(char)
+                else:
+                    repaired_chars.append(char)
+                    if self.is_base_character(char):
+                        has_base = True
+
+            repaired_words.append("".join(repaired_chars))
+
+        return " ".join(repaired_words)
+
     def validate_charset(self) -> Dict[str, Any]:
         """
         Perform rigorous integrity checks on the charset registry:

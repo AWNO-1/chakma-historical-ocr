@@ -9,18 +9,14 @@ import random
 from typing import Any, Dict, List, Optional, Tuple, Union
 from PIL import Image
 
-from generator.background import BackgroundEngine
 from generator.charset_engine import CharsetEngine
 from generator.corpus_engine import CorpusEngine
 from generator.font_engine import FontEngine, FontMetadata
 from generator.layout_engine import LayoutEngine, PageLayout
 from generator.line_renderer import LineRenderer, RenderedPageLines
-from generator.metadata import (
-    SampleCharacter,
-    SampleMetadata,
-    SyntheticSample,
-    SyntheticSampleMetadata,
-)
+from generator.background import BackgroundLibrary, BackgroundEngine
+from generator.transform_engine import TransformPipeline, TransformationResult
+from generator.metadata import SampleCharacter, SampleMetadata, SyntheticSample, SyntheticSampleMetadata
 from utils.file_utils import load_yaml, resolve_path
 from utils.geometry import BBox
 from utils.logging_utils import setup_logger
@@ -30,19 +26,22 @@ logger = setup_logger("synthetic_generator")
 
 class SyntheticGenerator:
     """
-    Main Synthetic Manuscript Generator for Chakma Script.
-    Executes the complete in-memory pipeline:
-    Text -> Charset Validation -> Font Selection -> Layout -> Rendering -> Metadata -> SyntheticSample
+    Authoritative Synthetic Manuscript Sample Generator for Chakma Historical OCR.
+    Orchestrates the entire generation pipeline:
+    Corpus Text Sampling -> Charset Normalization -> Typography & Layout -> Line Rendering ->
+    Historical Background Compositing -> Transform & Degradation Pipeline -> SyntheticSample.
     """
 
     def __init__(
         self,
-        config_path: Union[str, Path] = "config/synthetic.yaml",
+        config_path: Optional[Union[str, Path]] = "config/synthetic.yaml",
         charset_engine: Optional[CharsetEngine] = None,
         corpus_engine: Optional[CorpusEngine] = None,
         font_engine: Optional[FontEngine] = None,
         layout_engine: Optional[LayoutEngine] = None,
         line_renderer: Optional[LineRenderer] = None,
+        background_engine: Optional[BackgroundLibrary] = None,
+        transform_pipeline: Optional[TransformPipeline] = None,
         seed: int = 42,
     ):
         self.config_path = resolve_path(config_path) if config_path else None
@@ -82,8 +81,13 @@ class SyntheticGenerator:
             default_font_size=self.default_font_size,
             seed=seed,
         )
-        self.background_engine = BackgroundEngine(
-            backgrounds_dir=self.config.get("backgrounds", {}).get("base_dir", "data/backgrounds")
+        self.background_engine = background_engine if background_engine is not None else BackgroundLibrary(
+            backgrounds_dir=self.config.get("backgrounds", {}).get("base_dir", "data/backgrounds"),
+            seed=seed,
+        )
+        self.transform_pipeline = transform_pipeline if transform_pipeline is not None else TransformPipeline(
+            config_path=self.config_path,
+            seed=seed,
         )
 
         logger.info(f"SyntheticGenerator initialized with seed={self.seed}")
@@ -96,47 +100,46 @@ class SyntheticGenerator:
         self.font_engine.set_seed(seed)
         self.layout_engine.set_seed(seed)
         self.line_renderer.seed = seed
+        self.background_engine.set_seed(seed)
+        self.transform_pipeline.set_seed(seed)
 
     def generate(
         self,
-        seed: Optional[int] = None,
+        text_lines: Optional[List[str]] = None,
+        num_lines: Optional[int] = None,
         font_path: Optional[Union[str, Path]] = None,
         font_size: Optional[int] = None,
-        num_lines: Optional[int] = None,
-        text_lines: Optional[List[str]] = None,
-        sample_id: Optional[str] = None,
-        text_color: Tuple[int, int, int, int] = (15, 15, 15, 255),
+        text_color: Optional[Tuple[int, int, int, int]] = None,
         background_color: Tuple[int, int, int, int] = (255, 255, 255, 0),
+        use_real_background: bool = False,
+        background_category: Optional[str] = None,
+        apply_transforms: bool = False,
+        random_font_per_line: bool = False,
+        ink_palettes: Optional[List[Tuple[int, int, int, int]]] = None,
+        baseline_jitter: float = 0.0,
+        random_size_jitter: float = 0.0,
+        sample_id: Optional[str] = None,
+        seed: Optional[int] = None,
     ) -> SyntheticSample:
         """
-        Generate a single in-memory synthetic manuscript sample.
-
-        Pipeline Flow:
-        1. Text sampling / input resolution
-        2. Charset validation & normalization
-        3. Font & typography selection
-        4. Geometric layout calculation
-        5. Continuous line rendering with grapheme cluster bbox extraction
-        6. Character metadata packaging into SyntheticSample
+        Generate a synthetic manuscript page sample.
         """
         actual_seed = seed if seed is not None else self._rng.randint(0, 1_000_000)
         rng = random.Random(actual_seed)
-        sid = sample_id if sample_id is not None else f"sample_{actual_seed:06d}"
+        sid = sample_id or f"sample_{actual_seed:06d}"
 
         # ------------------------------------------------------------------
-        # 1. Text & Charset Validation
+        # 1. Text Sampling & Normalization
         # ------------------------------------------------------------------
-        if text_lines is not None and len(text_lines) > 0:
-            raw_lines = [self.corpus_engine.normalize_text(line) for line in text_lines]
+        if text_lines is not None:
+            raw_lines = text_lines
         else:
-            n_lines = num_lines if num_lines is not None else rng.randint(
-                self.min_lines_per_page, self.max_lines_per_page
-            )
-            raw_lines = self.corpus_engine.get_random_sentences(
-                count=n_lines, seed=rng.randint(0, 1_000_000)
-            )
+            lines_count = num_lines or rng.randint(self.min_lines_per_page, self.max_lines_per_page)
+            raw_lines = [
+                self.corpus_engine.get_random_sentence(seed=rng.randint(0, 1_000_000))
+                for _ in range(lines_count)
+            ]
 
-        # Validate that lines contain valid Chakma characters
         valid_lines: List[str] = []
         for line in raw_lines:
             cleaned_line = "".join(
@@ -146,7 +149,6 @@ class SyntheticGenerator:
                 valid_lines.append(cleaned_line)
 
         if not valid_lines:
-            # Fallback to single corpus word if text was empty
             valid_lines = [self.corpus_engine.get_random_sentence(seed=rng.randint(0, 1_000_000))]
 
         # ------------------------------------------------------------------
@@ -161,7 +163,6 @@ class SyntheticGenerator:
             target_font_path = font_meta.path
             font_name = font_meta.name
 
-        # Font size resolution
         if font_size is not None:
             target_font_size = max(self.font_size_min, min(font_size, self.font_size_max))
         else:
@@ -175,28 +176,49 @@ class SyntheticGenerator:
             font_path=target_font_path,
             font_size=target_font_size,
             seed=rng.randint(0, 1_000_000),
+            wrap_lines=True,
         )
 
         # ------------------------------------------------------------------
-        # 4. Rendering
+        # 4. Background Selection
+        # ------------------------------------------------------------------
+        bg_image: Optional[Image.Image] = None
+        bg_info = "solid"
+        if use_real_background or background_category is not None:
+            loaded_bg = self.background_engine.get_background(
+                category=background_category,
+                width=self.canvas_width,
+                height=self.canvas_height,
+                seed=rng.randint(0, 1_000_000),
+            )
+            bg_image = loaded_bg.image
+            bg_info = f"{loaded_bg.category} ({loaded_bg.source_path.name if loaded_bg.source_path else 'fallback'})"
+
+        # ------------------------------------------------------------------
+        # 5. Rendering
         # ------------------------------------------------------------------
         rendered_page: RenderedPageLines = self.line_renderer.render_page_lines(
             page_layout=page_layout,
             font_path=target_font_path,
             font_size=target_font_size,
             text_color=text_color,
+            background_image=bg_image,
             background_color=background_color,
+            ink_palettes=ink_palettes,
+            random_font_per_line=random_font_per_line,
+            random_size_jitter=random_size_jitter,
+            baseline_jitter=baseline_jitter,
+            seed=rng.randint(0, 1_000_000),
         )
 
         # ------------------------------------------------------------------
-        # 5. Character Metadata Extraction
+        # 6. Character Metadata Extraction
         # ------------------------------------------------------------------
-        characters: List[SampleCharacter] = []
+        raw_characters: List[SampleCharacter] = []
         global_char_id = 0
 
         for r_line in rendered_page.lines:
             for r_char in r_line.characters:
-                # Ensure class ID validity
                 cid = r_char.class_id if r_char.class_id is not None else 0
                 sample_char = SampleCharacter(
                     id=global_char_id,
@@ -207,34 +229,68 @@ class SyntheticGenerator:
                     word_id=r_char.word_id,
                     reading_order=r_char.reading_order,
                 )
-                characters.append(sample_char)
+                raw_characters.append(sample_char)
                 global_char_id += 1
 
+        final_image = rendered_page.image.convert("RGB")
+        final_characters = raw_characters
+        applied_transforms_list: List[str] = []
+        transform_params_dict: Dict[str, Any] = {}
+
         # ------------------------------------------------------------------
-        # 6. Sample Packaging
+        # 7. Transformation & Degradation Pipeline (if requested)
+        # ------------------------------------------------------------------
+        if apply_transforms:
+            input_boxes = [c.bbox for c in raw_characters]
+            trans_res: TransformationResult = self.transform_pipeline.apply(
+                image=final_image,
+                bboxes=input_boxes,
+                seed=rng.randint(0, 1_000_000),
+            )
+            final_image = trans_res.image
+            applied_transforms_list = trans_res.applied_transforms
+            transform_params_dict = trans_res.parameters
+
+            # Update characters with transformed bounding boxes
+            updated_chars: List[SampleCharacter] = []
+            for orig_c, trans_b in zip(raw_characters, trans_res.bboxes):
+                updated_chars.append(SampleCharacter(
+                    id=orig_c.id,
+                    class_id=orig_c.class_id,
+                    text=orig_c.text,
+                    bbox=trans_b,
+                    line_id=orig_c.line_id,
+                    word_id=orig_c.word_id,
+                    reading_order=orig_c.reading_order,
+                ))
+            final_characters = updated_chars
+
+        # ------------------------------------------------------------------
+        # 8. Sample Packaging
         # ------------------------------------------------------------------
         full_text = "\n".join(valid_lines)
         metadata = SampleMetadata(
             sample_id=sid,
             seed=actual_seed,
-            width=rendered_page.width,
-            height=rendered_page.height,
+            width=final_image.width,
+            height=final_image.height,
             font_name=font_name,
             font_size=target_font_size,
             total_lines=len(rendered_page.lines),
-            total_characters=len(characters),
+            total_characters=len(final_characters),
             text=full_text,
             lines_text=valid_lines,
             extra={
                 "font_path": str(target_font_path),
-                "margin_top": page_layout.margin_top,
-                "margin_left": page_layout.margin_left,
+                "background": bg_info,
+                "applied_transforms": applied_transforms_list,
+                "transform_parameters": transform_params_dict,
             },
         )
 
         return SyntheticSample(
-            image=rendered_page.image,
-            characters=characters,
+            image=final_image,
+            characters=final_characters,
             metadata=metadata,
             seed=actual_seed,
         )

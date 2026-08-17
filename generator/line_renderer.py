@@ -7,6 +7,7 @@ bounding boxes, class IDs, reading orders, and spatial coordinates without separ
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 import random
+import unicodedata
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -126,6 +127,71 @@ class LineRenderer:
         self.charset_engine = charset_engine if charset_engine is not None else CharsetEngine()
         self.font_engine = font_engine if font_engine is not None else FontEngine(charset_engine=self.charset_engine, seed=seed)
 
+    @staticmethod
+    def _split_grapheme_clusters(text: str) -> List[Tuple[str, int]]:
+        """
+        Split text into grapheme clusters, each as (cluster_string, start_index).
+
+        A grapheme cluster = one base character + all following combining marks
+        (Unicode categories Mn, Mc, Me) and format characters (Cf, excluding space).
+        This matches what a shaping engine renders as a single visual unit.
+        """
+        clusters: List[Tuple[str, int]] = []
+        current_cluster = ""
+        current_start = 0
+
+        for i, char in enumerate(text):
+            cat = unicodedata.category(char)
+            is_combining = cat in ("Mn", "Mc", "Me") or (cat == "Cf" and char != " ")
+
+            if is_combining and current_cluster:
+                # Attach to current cluster
+                current_cluster += char
+            else:
+                # Save previous cluster (if any) and start new one
+                if current_cluster:
+                    clusters.append((current_cluster, current_start))
+                current_cluster = char
+                current_start = i
+
+        if current_cluster:
+            clusters.append((current_cluster, current_start))
+
+        return clusters
+
+    @staticmethod
+    def _rightmost_ink_col(img: Image.Image, threshold: int = 10) -> Optional[int]:
+        """
+        Return the rightmost column index that contains at least one pixel
+        with alpha > threshold, or None if the image is fully transparent.
+        """
+        arr = np.array(img)           # shape: (H, W, 4)
+        alpha = arr[:, :, 3]          # alpha channel
+        cols = np.where(alpha.max(axis=0) > threshold)[0]
+        return int(cols[-1]) if len(cols) > 0 else None
+
+    @staticmethod
+    def _ink_y_range(
+        img: Image.Image,
+        x_start: int,
+        x_end: int,
+        threshold: int = 10,
+    ) -> Tuple[Optional[float], Optional[float]]:
+        """
+        Return (y_min, y_max) of ink pixels in the column band [x_start, x_end)
+        of img, or (None, None) if no ink is found.
+        """
+        arr = np.array(img)
+        col_lo = max(0, x_start)
+        col_hi = min(img.width, x_end)
+        if col_lo >= col_hi:
+            return None, None
+        region_alpha = arr[:, col_lo:col_hi, 3]
+        rows = np.where(region_alpha.max(axis=1) > threshold)[0]
+        if len(rows) == 0:
+            return None, None
+        return float(rows[0]), float(rows[-1] + 1)
+
     def measure_character(self, char: str, font: ImageFont.FreeTypeFont) -> Tuple[float, float, float, float]:
         """
         Measure exact bounding box offsets for a single character relative to (0, 0) anchor.
@@ -216,41 +282,58 @@ class LineRenderer:
         # Render continuous line
         draw.text((origin_x, origin_y), text, font=pil_font, fill=text_color)
 
-        # Compute character bounding boxes along the line
+        # ------------------------------------------------------------------
+        # Progressive pixel-delta bbox computation per character & diacritic.
+        #
+        # For every codepoint (consonant, independent vowel, dependent vowel
+        # sign/matra, virama/maaw, digit, punctuation):
+        # We render progressive prefixes on a canvas and extract the exact
+        # bounding box of the newly added ink pixels (diff mask).
+        # This gives ground-truth bounding boxes for ALL 71 individual classes
+        # (including diacritics positioned over or under base consonants)
+        # matching YOLO multi-class detection specifications.
+        # ------------------------------------------------------------------
         rendered_chars: List[RenderedCharacter] = []
-        curr_x = origin_x
-        curr_y = origin_y
         current_word_id = 0
         current_reading_order = reading_order_start
 
-        for char in text:
+        prev_img = Image.new("RGBA", (img_w, img_h), (0, 0, 0, 0))
+
+        for i, char in enumerate(text):
             if char == " ":
                 current_word_id += 1
-                curr_x += pil_font.getlength(" ")
                 continue
 
             class_id = self.charset_engine.get_class_id(char)
             if class_id is None:
-                # Unsupported character: advance width but log/skip class assignment
                 logger.warning(f"Unsupported character in text: '{char}' (U+{ord(char):04X})")
-                curr_x += pil_font.getlength(char)
                 continue
 
-            c_bbox = pil_font.getbbox(char)
-            c_advance = pil_font.getlength(char)
+            prefix = text[:i + 1]
+            curr_img = Image.new("RGBA", (img_w, img_h), (0, 0, 0, 0))
+            curr_draw = ImageDraw.Draw(curr_img)
+            curr_draw.text((origin_x, origin_y), prefix, font=pil_font, fill=(0, 0, 0, 255))
 
-            if c_bbox is not None:
-                bx_min = curr_x + c_bbox[0]
-                by_min = curr_y + c_bbox[1]
-                bx_max = curr_x + c_bbox[2]
-                by_max = curr_y + c_bbox[3]
+            curr_arr = np.array(curr_img)[:, :, 3]
+            prev_arr = np.array(prev_img)[:, :, 3]
+
+            diff = (curr_arr > 10) & (prev_arr <= 10)
+            rows, cols = np.where(diff)
+
+            if len(rows) > 0 and len(cols) > 0:
+                bx_min = float(cols.min())
+                bx_max = float(cols.max() + 1)
+                by_min = float(rows.min())
+                by_max = float(rows.max() + 1)
             else:
-                bx_min = curr_x
-                by_min = curr_y
-                bx_max = curr_x + target_size * 0.6
-                by_max = curr_y + target_size * 0.8
+                # Fallback to font advance if diff is identical
+                cursor_x = origin_x + pil_font.getlength(text[:i])
+                adv = max(2.0, pil_font.getlength(prefix) - pil_font.getlength(text[:i]))
+                bx_min = cursor_x
+                bx_max = cursor_x + adv
+                by_min = float(origin_y)
+                by_max = float(origin_y + target_size * 0.85)
 
-            # Ensure positive box dimensions
             char_w = max(2.0, bx_max - bx_min)
             char_h = max(2.0, by_max - by_min)
 
@@ -263,8 +346,6 @@ class LineRenderer:
                 class_name=self.charset_engine.get_character(class_id),
                 confidence=1.0,
             )
-
-            # In single line mode, global bbox equals local bbox
             global_box = BBox(
                 x_min=local_box.x_min,
                 y_min=local_box.y_min,
@@ -275,7 +356,7 @@ class LineRenderer:
                 confidence=1.0,
             )
 
-            rendered_char = RenderedCharacter(
+            rendered_chars.append(RenderedCharacter(
                 character=char,
                 class_id=class_id,
                 local_bbox=local_box,
@@ -283,22 +364,31 @@ class LineRenderer:
                 line_id=line_id,
                 word_id=current_word_id,
                 reading_order=current_reading_order,
-            )
-            rendered_chars.append(rendered_char)
+            ))
             current_reading_order += 1
+            prev_img = curr_img
 
-            # Advance x cursor by character glyph advance
-            curr_x += c_advance
-
-        line_bbox = BBox(
-            x_min=origin_x,
-            y_min=origin_y,
-            x_max=curr_x,
-            y_max=origin_y + raw_h,
-            class_id=-1,
-            class_name="line",
-            confidence=1.0,
-        )
+        # Line bbox from actual ink pixels
+        line_arr = np.array(line_img)
+        line_alpha = line_arr[:, :, 3]
+        ink_cols = np.where(line_alpha.max(axis=0) > 10)[0]
+        ink_rows = np.where(line_alpha.max(axis=1) > 10)[0]
+        if len(ink_cols) > 0 and len(ink_rows) > 0:
+            line_bbox = BBox(
+                x_min=float(ink_cols[0]),
+                y_min=float(ink_rows[0]),
+                x_max=float(ink_cols[-1] + 1),
+                y_max=float(ink_rows[-1] + 1),
+                class_id=-1,
+                class_name="line",
+                confidence=1.0,
+            )
+        else:
+            line_bbox = BBox(
+                x_min=origin_x, y_min=origin_y,
+                x_max=origin_x + raw_w, y_max=origin_y + raw_h,
+                class_id=-1, class_name="line", confidence=1.0,
+            )
 
         return RenderedLine(
             image=line_img,
@@ -318,86 +408,145 @@ class LineRenderer:
         page_layout: PageLayout,
         font_path: Optional[Union[str, Path]] = None,
         font_size: Optional[int] = None,
-        text_color: Tuple[int, int, int, int] = (20, 20, 20, 255),
+        text_color: Optional[Tuple[int, int, int, int]] = None,
+        background_image: Optional[Image.Image] = None,
         background_color: Tuple[int, int, int, int] = (255, 255, 255, 0),
+        ink_palettes: Optional[List[Tuple[int, int, int, int]]] = None,
+        random_font_per_line: bool = False,
+        random_size_jitter: float = 0.0,
+        baseline_jitter: float = 0.0,
+        seed: Optional[int] = None,
     ) -> RenderedPageLines:
         """
-        Render all lines of a PageLayout onto a full manuscript page canvas
-        and return the assembled image with global character annotations.
+        Render all lines of a PageLayout onto a full manuscript page canvas.
+        Supports real background image compositing, varied historical ink colors,
+        multi-font selection per line, and baseline/size jitter.
         """
-        page_img = Image.new("RGBA", (page_layout.width, page_layout.height), background_color)
-        draw = ImageDraw.Draw(page_img)
+        rng = random.Random(seed) if seed is not None else self._rng
 
-        target_size = font_size if font_size is not None else self.default_font_size
-
-        if font_path is None:
-            supported = self.font_engine.get_supported_fonts()
-            target_font_path = supported[0].path if supported else Path("fonts/NotoSansChakma-Regular.ttf")
+        # Base canvas: either provided background texture or blank RGBA
+        if background_image is not None:
+            page_img = background_image.copy().convert("RGBA")
+            if page_img.size != (page_layout.width, page_layout.height):
+                page_img = page_img.resize((page_layout.width, page_layout.height), Image.Resampling.BICUBIC)
         else:
-            target_font_path = resolve_path(font_path)
+            page_img = Image.new("RGBA", (page_layout.width, page_layout.height), background_color)
 
-        pil_font = self.font_engine.get_font(target_font_path, size=target_size)
+        base_size = font_size if font_size is not None else self.default_font_size
+
+        supported_fonts = self.font_engine.get_supported_fonts()
+        if font_path is None:
+            default_font_path = supported_fonts[0].path if supported_fonts else Path("fonts/NotoSansChakma-Regular.ttf")
+        else:
+            default_font_path = resolve_path(font_path)
+
+        # Authentic historical ink colors (iron-gall, walnut, charcoal, soot, sepia)
+        default_palettes = [
+            (45, 32, 24, 245),   # Iron-gall brown
+            (36, 26, 18, 250),   # Walnut dark brown
+            (28, 28, 32, 255),   # Charcoal carbon ink
+            (58, 48, 38, 235),   # Aged sepia
+            (22, 22, 25, 255),   # Soft soot black
+        ]
+        active_palettes = ink_palettes or default_palettes
 
         rendered_lines: List[RenderedLine] = []
         global_reading_order = 0
 
         for line_layout in page_layout.lines:
-            line_text = line_layout.text
-            start_x = line_layout.x
-            start_y = line_layout.y
-
-            if not line_text:
+            if not line_layout.text:
                 continue
 
-            # Render continuous line on page canvas
-            draw.text((start_x, start_y), line_text, font=pil_font, fill=text_color)
+            # Resolve line font
+            if random_font_per_line and len(supported_fonts) > 1:
+                line_font_path = rng.choice(supported_fonts).path
+            else:
+                line_font_path = default_font_path
 
-            # Extract character bboxes from page layout or recalculate
-            line_chars: List[RenderedCharacter] = []
-            for char_layout in line_layout.characters:
-                global_bbox = BBox(
-                    x_min=char_layout.x,
-                    y_min=char_layout.y,
-                    x_max=char_layout.x + char_layout.width,
-                    y_max=char_layout.y + char_layout.height,
-                    class_id=char_layout.class_id,
-                    class_name=char_layout.character,
-                    confidence=1.0,
-                )
-                local_bbox = BBox(
-                    x_min=char_layout.x - start_x,
-                    y_min=char_layout.y - start_y,
-                    x_max=char_layout.x - start_x + char_layout.width,
-                    y_max=char_layout.y - start_y + char_layout.height,
-                    class_id=char_layout.class_id,
-                    class_name=char_layout.character,
-                    confidence=1.0,
-                )
-                r_char = RenderedCharacter(
-                    character=char_layout.character,
-                    class_id=char_layout.class_id,
-                    local_bbox=local_bbox,
-                    global_bbox=global_bbox,
-                    line_id=line_layout.line_id,
-                    word_id=char_layout.word_id,
-                    reading_order=char_layout.reading_order,
-                )
-                line_chars.append(r_char)
-                global_reading_order += 1
+            # Resolve line font size with jitter
+            if random_size_jitter > 0:
+                size_delta = int(round(rng.uniform(-random_size_jitter, random_size_jitter)))
+                line_font_size = max(18, base_size + size_delta)
+            else:
+                line_font_size = base_size
 
-            r_line = RenderedLine(
-                image=page_img,  # Reference to page canvas
-                text=line_text,
+            # Resolve line ink color
+            if text_color is not None:
+                line_color = text_color
+            else:
+                line_color = rng.choice(active_palettes)
+
+            # Baseline jitter
+            y_offset = rng.uniform(-baseline_jitter, baseline_jitter) if baseline_jitter > 0 else 0.0
+
+            paste_x = int(round(line_layout.x))
+            paste_y = int(round(line_layout.y + y_offset))
+
+            # Render line to its own transparent canvas
+            r_line_single = self.render_line(
+                text=line_layout.text,
+                font_path=line_font_path,
+                font_size=line_font_size,
                 line_id=line_layout.line_id,
-                font_path=target_font_path,
-                font_size=target_size,
-                bbox=line_layout.bbox,
-                characters=line_chars,
-                width=int(line_layout.width),
-                height=int(line_layout.height),
-                reading_order=line_layout.line_id,
+                reading_order_start=global_reading_order,
+                text_color=line_color,
+                background_color=(0, 0, 0, 0),
+                padding=0,
             )
-            rendered_lines.append(r_line)
+
+            # Composite line onto page canvas
+            page_img.paste(r_line_single.image, (paste_x, paste_y), r_line_single.image)
+
+            # Shift every character's local_bbox by the paste offset → global_bbox
+            global_chars: List[RenderedCharacter] = []
+            for rc in r_line_single.characters:
+                lb = rc.local_bbox
+                gb = BBox(
+                    x_min=round(lb.x_min + paste_x, 2),
+                    y_min=round(lb.y_min + paste_y, 2),
+                    x_max=round(lb.x_max + paste_x, 2),
+                    y_max=round(lb.y_max + paste_y, 2),
+                    class_id=rc.class_id,
+                    class_name=lb.class_name,
+                    confidence=1.0,
+                )
+                global_chars.append(RenderedCharacter(
+                    character=rc.character,
+                    class_id=rc.class_id,
+                    local_bbox=lb,
+                    global_bbox=gb,
+                    line_id=rc.line_id,
+                    word_id=rc.word_id,
+                    reading_order=rc.reading_order,
+                ))
+
+            global_reading_order += len(global_chars)
+
+            # Tight line bbox derived from actual rendered character positions
+            if global_chars:
+                lx_min = min(c.global_bbox.x_min for c in global_chars)
+                ly_min = min(c.global_bbox.y_min for c in global_chars)
+                lx_max = max(c.global_bbox.x_max for c in global_chars)
+                ly_max = max(c.global_bbox.y_max for c in global_chars)
+                tight_bbox = BBox(
+                    x_min=lx_min, y_min=ly_min, x_max=lx_max, y_max=ly_max,
+                    class_id=-1, class_name="line", confidence=1.0,
+                )
+            else:
+                tight_bbox = line_layout.bbox
+
+            rendered_lines.append(RenderedLine(
+                image=page_img,
+                text=line_layout.text,
+                line_id=line_layout.line_id,
+                font_path=line_font_path,
+                font_size=line_font_size,
+                bbox=tight_bbox,
+                characters=global_chars,
+                width=r_line_single.width,
+                height=r_line_single.height,
+                reading_order=line_layout.line_id,
+            ))
 
         total_chars = sum(len(l.characters) for l in rendered_lines)
 

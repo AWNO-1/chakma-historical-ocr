@@ -329,12 +329,53 @@ class LayoutEngine:
         advance_w = glyph_w + (font_size * self.char_spacing_ratio)
         return offset_x, offset_y, glyph_w, glyph_h, advance_w
 
+    def wrap_text_lines(
+        self,
+        raw_lines: List[str],
+        font_path: Path,
+        font_size: int,
+        max_width: float,
+    ) -> List[str]:
+        """
+        Word-wrap input text lines so that no rendered line exceeds max_width.
+        """
+        pil_font = self.font_engine.get_font(font_path, size=font_size)
+        wrapped: List[str] = []
+
+        for line in raw_lines:
+            words = line.strip().split()
+            if not words:
+                continue
+
+            current_line_words: List[str] = []
+
+            for word in words:
+                candidate = " ".join(current_line_words + [word]) if current_line_words else word
+                cand_w = pil_font.getlength(candidate)
+
+                if cand_w <= max_width:
+                    current_line_words.append(word)
+                else:
+                    if current_line_words:
+                        wrapped.append(" ".join(current_line_words))
+                        current_line_words = [word]
+                    else:
+                        # Single word exceeds line width: wrap it as single line
+                        wrapped.append(word)
+                        current_line_words = []
+
+            if current_line_words:
+                wrapped.append(" ".join(current_line_words))
+
+        return wrapped if wrapped else [""]
+
     def generate_page_layout(
         self,
         lines_text: List[str],
         font_path: Optional[Union[str, Path]] = None,
         font_size: Optional[int] = None,
         seed: Optional[int] = None,
+        wrap_lines: bool = False,
     ) -> PageLayout:
         """
         Compute complete geometric layout for a list of text lines across a page canvas.
@@ -362,8 +403,17 @@ class LayoutEngine:
         line_step = target_font_size * self.line_spacing_ratio
         max_possible_lines = max(1, int(available_height // line_step))
 
-        # Select lines that fit vertically
-        active_lines = lines_text[:max_possible_lines] if lines_text else [""]
+        # Word-wrap input lines if requested
+        if wrap_lines:
+            wrapped_lines = self.wrap_text_lines(
+                raw_lines=lines_text,
+                font_path=target_font_path,
+                font_size=target_font_size,
+                max_width=available_width,
+            )
+            active_lines = wrapped_lines[:max_possible_lines] if wrapped_lines else [""]
+        else:
+            active_lines = lines_text[:max_possible_lines] if lines_text else [""]
 
         # 3. Position and compute each line
         lines_layout: List[LineLayout] = []
@@ -542,11 +592,11 @@ class LayoutEngine:
         is_valid = len(errors) == 0
 
         report = {
-            "is_valid": is_valid,
-            "total_lines": layout.total_lines,
-            "total_characters": layout.total_characters,
-            "errors": errors,
-            "warnings": warnings,
+            \"is_valid\": is_valid,
+            \"total_lines\": layout.total_lines,
+            \"total_characters\": layout.total_characters,
+            \"errors\": errors,
+            \"warnings\": warnings,
         }
 
         if not is_valid:

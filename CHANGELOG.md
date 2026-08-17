@@ -4,6 +4,23 @@ All notable changes to the Chakma Historical OCR project will be documented in t
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.9.0] - 2026-08-17 - Stage 09: Historical Document Transformation Engine
+
+### Added
+- Authoritative `TransformPipeline` and `TransformEngine` in `generator/transform_engine.py` orchestrating geometric transformations with synchronous bounding box coordinate mapping.
+- Geometric transform functions: `apply_rotation()`, `apply_translation()`, `apply_perspective()`, `apply_elastic()`, and `apply_curvature()`.
+- Synchronous 4-corner bounding box polygon projection with exact axis-aligned bounding box (AABB) calculation, non-degeneracy validation, and canvas boundary clipping.
+- Comprehensive `AugmentationEngine` in `generator/augmentations.py` simulating realistic photometric and optical degradations:
+  - Multi-type blur (Gaussian defocus, directional motion blur, box filter).
+  - Additive Gaussian, speckle, and salt-and-pepper aging dust noise.
+  - Authentic non-black historical ink tone shifts (iron-gall brown/sepia, charcoal, walnut), ink fading, and intra-stroke density jitter.
+  - Non-uniform lighting gradients, corner shadow vignetting, and spotlights.
+  - Backside ink bleed-through / ghosting simulation from reverse paper page.
+  - JPEG discrete cosine transform (DCT) compression artifacts.
+- Dedicated unit test suite `tests/test_transform_engine.py` with 8 tests covering rotation, translation, perspective, elastic, curvature, photometric augmentations, end-to-end pipeline determinism, and invalid box quarantine (76 tests total in project suite).
+- Visualization diagnostic utility `debug/transformations/demo_transforms.py` generating before/after comparison images with bounding-box overlays and transformation matrix logging.
+- Documentation report `docs/stages/stage_09_historical_transforms.md` and Architecture Decision Record `ADR-009-historical-transformation-engine.md`.
+
 ## [0.8.0] - 2026-08-17 - Stage 08: Historical Background Library and Loader
 
 ### Added

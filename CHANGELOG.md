@@ -4,6 +4,17 @@ All notable changes to the Chakma Historical OCR project will be documented in t
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.7.0] - 2026-08-17 - Stage 07: Synthetic Sample Generator Core
+
+### Added
+- Authoritative `SyntheticGenerator` in `generator/api.py` seamlessly connecting `CorpusEngine`, `CharsetEngine`, `FontEngine`, `LayoutEngine`, and `LineRenderer` into an in-memory synthetic manuscript generation pipeline.
+- Structured dataclasses `SyntheticSample`, `SampleCharacter`, and `SampleMetadata` in `generator/metadata.py` encapsulating raw PIL canvas, character-level ground truth annotations, typography attributes, reading order, and RNG seed.
+- Pipeline flow: Text sampling -> Charset validation & normalization -> Font & size selection -> Page layout geometry -> Continuous line rendering -> Ground-truth character metadata extraction -> SyntheticSample packaging.
+- Deterministic batch generation via `generate_batch()` and normalized YOLO format export via `SyntheticSample.to_yolo_lines()`.
+- Dedicated test suite `tests/test_synthetic_generator.py` with 8 comprehensive unit and integration tests (62 tests passing across whole project).
+- Visual verification script `utils/generate_stage07_samples.py` generating 10 multi-line synthetic samples with clean renders and character bounding-box overlays.
+- Documentation report `docs/stages/stage_07_synthetic_generator.md` and Architecture Decision Record `ADR-007-synthetic-generator-core.md`.
+
 ## [0.6.0] - 2026-08-17 - Stage 06: Chakma Line Renderer
 
 ### Added

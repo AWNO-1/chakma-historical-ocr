@@ -7,7 +7,7 @@ from generator.charset_engine import CharsetEngine, ChakmaClass
 from generator.corpus_engine import CorpusEngine
 from generator.font_engine import FontEngine, FontMetadata
 from generator.layout_engine import LayoutEngine, LayoutConfig, PageLayout, LineLayout, CharacterLayout
-from generator.line_renderer import LineRenderer
+from generator.line_renderer import LineRenderer, RenderedCharacter, RenderedLine, RenderedPageLines
 from generator.background import BackgroundEngine
 from generator.augmentations import AugmentationEngine
 from generator.transform_engine import TransformEngine
@@ -29,6 +29,9 @@ __all__ = [
     "LineLayout",
     "CharacterLayout",
     "LineRenderer",
+    "RenderedCharacter",
+    "RenderedLine",
+    "RenderedPageLines",
     "BackgroundEngine",
     "AugmentationEngine",
     "TransformEngine",

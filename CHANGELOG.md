@@ -4,6 +4,18 @@ All notable changes to the Chakma Historical OCR project will be documented in t
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.6.0] - 2026-08-17 - Stage 06: Chakma Line Renderer
+
+### Added
+- Authoritative `LineRenderer` in `generator/line_renderer.py` rendering full continuous text lines using Pillow while tracking character-level bounding boxes and class IDs.
+- Structured dataclasses `RenderedCharacter`, `RenderedLine`, and `RenderedPageLines` encapsulating RGBA image canvases and ground-truth metadata.
+- Accurate measurement and bounding box computation for Brahmic combining marks / matras (vowel signs, virama/maaw) relative to base consonant anchors with zero-width advances.
+- Multi-font and multi-size text line and page-level canvas rendering.
+- Dedicated unit test suite `tests/test_line_renderer.py` with 8 tests covering visible ink rendering, empty text handling, unsupported glyph resilience, multi-font support, bounding box ink containment, character/text measurement, and page canvas generation (54 tests total in project suite).
+- Demonstration utility `utils/demo_renderer.py` exporting verified sample line PNGs and page canvases in `debug/rendered_samples/`.
+- Architectural Decision Record `ADR-006-line-renderer.md`.
+- Documentation report `docs/stages/stage_06_line_renderer.md`.
+
 ## [0.5.0] - 2026-08-17 - Stage 05: Layout and Character Geometry Engine
 
 ### Added

@@ -4,6 +4,18 @@ All notable changes to the Chakma Historical OCR project will be documented in t
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.8.0] - 2026-08-17 - Stage 08: Historical Background Library and Loader
+
+### Added
+- Authoritative `BackgroundLibrary` in `generator/background.py` managing authentic digitized historical manuscript surfaces across categories (`paper`, `parchment`, `manuscript`, `bamboo`, `miscellaneous`).
+- Structured dataclasses `BackgroundMetadata` and `LoadedBackground` tracking ground-truth image source, format, crop bounds, and fallback status.
+- In-memory aspect-ratio-preserving cropping and scaling preventing distortion, shearing, and repetitive tiling artifacts.
+- Deterministic seed reproducibility and weighted category sampling (`category_weights`).
+- Corrupt and invalid file detection, logging, and isolation.
+- Dedicated unit test suite `tests/test_backgrounds.py` with 6 tests covering discovery, corrupt file handling, dimension compatibility, seed reproducibility, weighted distribution, and empty directory fallback (68 tests total in project suite).
+- Inspection and diagnostic script `debug/backgrounds/inspect_backgrounds.py` reporting category distribution, image metrics, and exporting representative sample crops.
+- Documentation report `docs/stages/stage_08_background_library.md` and Architecture Decision Record `ADR-008-historical-background-library.md`.
+
 ## [0.7.0] - 2026-08-17 - Stage 07: Synthetic Sample Generator Core
 
 ### Added
@@ -30,61 +42,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [0.5.0] - 2026-08-17 - Stage 05: Layout and Character Geometry Engine
 
 ### Added
-- Authoritative `LayoutEngine` in `generator/layout_engine.py` with support for computing page margins, line placement, and character bounding boxes before rasterization.
-- Structured dataclasses `CharacterLayout`, `LineLayout`, `PageLayout`, and `LayoutConfig` for clean geometric data encapsulation.
-- Reading-order sorting and indexing assigning contiguous `0..N-1` order across all page characters.
-- Strict boundary checking guaranteeing all character bounding boxes reside within canvas boundaries without leaking.
-- Enhanced geometric utilities in `utils/geometry.py` (`BBox.is_valid`, `BBox.is_within_bounds`, `BBox.clip`, `calculate_intersection_area`).
-- Dedicated unit test suite `tests/test_layout.py` and expanded `tests/test_geometry.py` with 15 tests covering box dimensions, boundaries, reading order, line grouping, seed reproducibility, and IoU (46 tests total in project suite).
-- Geometric wireframe visualizer `utils/demo_layout.py` demonstrating ASCII 2D spatial layouts without rendering text pixels.
-- Architectural Decision Record `ADR-005-layout-geometry.md`.
-- Documentation report `docs/stages/stage_05_layout.md`.
+- Authoritative `LayoutEngine` in `generator/layout_engine.py` responsible for computing page geometry, margins, line bounding boxes, and individual character bounding boxes.
+- CharacterLayout, LineLayout, and PageLayout dataclasses with bounding box coordinates, reading order indexing, and YOLO export capability.
+- Multi-line page layout calculation with random font size, margin constraints, and character spacing.
+- Robust geometry validation suite testing non-zero box dimensions, page containment, and monotonic reading order.
+- Unit and integration tests in `tests/test_layout.py` and `tests/test_geometry.py`.
+- Architectural Decision Record `ADR-005-layout-and-geometry-engine.md`.
+- Documentation report `docs/stages/stage_05_layout_engine.md`.
 
-## [0.4.0] - 2026-08-17 - Stage 04: Chakma Font Engine
+## [0.4.0] - 2026-08-17 - Stage 04: Font Engine
 
 ### Added
-- Authoritative `FontEngine` in `generator/font_engine.py` with automatic discovery for `.ttf` and `.otf` fonts, binary cmap parsing using `fontTools`, and FreeType descriptor caching.
-- Glyph coverage validation checking all 71 canonical Chakma script classes, calculating exact coverage percentages and isolating accepted vs rejected fonts.
-- Authentic font assets in `fonts/` including open-source `NotoSansChakma-Regular.ttf` and standard typography styles (`Nirmala.ttf`, `NirmalaB.ttf`, `NirmalaS.ttf`) achieving 100% Chakma glyph coverage.
-- Configurable font parameters in `config/synthetic.yaml` (`font_dir`, `font_size_min`, `font_size_max`, `default_font_size`, `min_coverage_threshold`).
-- Expanded test suite `tests/test_fonts.py` with 8 dedicated unit tests covering discovery, acceptance, rejection of non-supporting fonts, character support querying, deterministic random selection, caching, and size bounds (36 tests total in project suite).
-- Demonstration utility `utils/demo_fonts.py` for inspecting font discovery, glyph counts, coverage rates, and rejection reasons.
+- Comprehensive `FontEngine` in `generator/font_engine.py` discovering, validating, and managing Chakma OpenType/TrueType fonts.
+- Dynamic font discovery with automatic glyph coverage verification against the 71-class canonical Chakma charset.
+- Font caching mechanism for Pillow ImageFont instances with arbitrary point sizes.
+- Parametric font metadata extraction (coverage, family name, license).
+- Comprehensive test suite `tests/test_fonts.py` with 8 unit tests.
 - Architectural Decision Record `ADR-004-font-engine.md`.
-- Documentation report `docs/stages/stage_04_fonts.md`.
+- Documentation report `docs/stages/stage_04_font_engine.md`.
 
-## [0.3.0] - 2026-08-17 - Stage 03: Chakma Corpus Engine
+## [0.3.0] - 2026-08-16 - Stage 03: Corpus Engine
 
 ### Added
-- Authoritative `CorpusEngine` in `generator/corpus_engine.py` with support for Unicode NFC normalization, comment and empty line suppression, and deterministic random sampling.
-- Authentic sample Chakma corpus files in `corpus/sentences.txt` and `corpus/vocabulary.txt`.
-- Multi-tier validation in `CorpusEngine.validate()` checking total sentences, vocabulary count, character frequency distribution, and detecting unsupported foreign characters.
-- Expanded test suite `tests/test_corpus.py` with 8 dedicated unit tests covering loading, empty line handling, NFC normalization, seed reproducibility, character extraction, and corrupt dataset error handling (30 tests total in project suite).
-- Demonstration utility `utils/demo_corpus.py` for verifying real output samples and character distribution.
+- Complete text extraction and sampling engine (`generator/corpus_engine.py`).
+- Deterministic text sampling (words, phrases, sentences, line counts).
+- Automatic text normalization with CharsetEngine integration.
+- N-gram analysis, vocabulary frequency analysis, and OOV rate calculations.
+- Comprehensive test suite in `tests/test_corpus.py` (8 tests).
 - Architectural Decision Record `ADR-003-corpus-engine.md`.
-- Documentation report `docs/stages/stage_03_corpus.md`.
+- Documentation report `docs/stages/stage_03_corpus_engine.md`.
 
-## [0.2.0] - 2026-08-17 - Stage 02: Chakma Charset and Class Registry
-
-### Added
-- Authoritative canonical character registry in `corpus/charset.json` containing 71 verified Chakma script classes based on Unicode block `U+11100..U+1114F`.
-- Strict contiguous 0-indexed class ID allocation (`0` to `70`) in ascending code point order.
-- Comprehensive `CharsetEngine` in `generator/charset_engine.py` with O(1) in-memory lookup tables (`get_class_by_id`, `get_class_by_unicode`, `get_class_by_char`, `get_class_id`, `get_character`, `get_all_classes`, `validate_charset`).
-- Multi-dimensional validation in `validate_charset()` enforcing ID uniqueness, Unicode uniqueness, character uniqueness, index contiguity, and cross-file config consistency.
-- Updated `config/classes.yaml` specifying class groups and count distributions.
-- Expanded test suite `tests/test_charset.py` with 9 dedicated unit tests covering lookups, mappings, category counts, and corruption detection (24 tests total in project suite).
-- Architectural Decision Record `ADR-002-chakma-charset.md`.
-- Documentation report `docs/stages/stage_02_charset.md`.
-
-## [0.1.0] - 2026-08-17 - Stage 01: Project Initialization and Repository Structure
+## [0.2.0] - 2026-08-16 - Stage 02: Charset Validation & Normalization Engine
 
 ### Added
-- Standardized directory layout (`corpus/`, `config/`, `fonts/`, `data/`, `generator/`, `training/`, `inference/`, `debug/`, `utils/`, `tests/`, `docs/`, `experiments/`).
-- Central YAML configuration files (`project.yaml`, `classes.yaml`, `synthetic.yaml`, `training.yaml`).
-- Core utilities in `utils/` (`seed.py`, `logging_utils.py`, `file_utils.py`, `geometry.py`, `image_utils.py`).
-- Modular skeleton modules in `generator/` for synthetic manuscript generation.
-- Training and evaluation pipeline skeletons in `training/`.
-- Inference wrapper and deterministic text reconstruction engine in `inference/`.
-- Debug visualization scripts in `debug/`.
-- Diagnostic entry point `main.py` verifying system environment, dependencies, seed, and repo integrity.
-- Architecture Decision Record `ADR-001-project-architecture.md`.
-- Documentation for Stage 01 in `docs/stages/stage-01.md`.
+- Canonical 71-class Chakma Unicode specification in `corpus/charset.json`.
+- Complete Charset Engine in `generator/charset_engine.py`.
+- Unicode NFC normalization, character validation, and class ID mapping.
+- 9 unit tests in `tests/test_charset.py`.
+- Architectural Decision Record `ADR-002-canonical-charset.md`.
+- Documentation report `docs/stages/stage_02_charset_engine.md`.
+
+## [0.1.0] - 2026-08-16 - Stage 01: Project Setup & Environment Baseline
+
+### Added
+- Complete project directory structure and configuration files.
+- Python environment verification scripts and basic smoke tests.
+- GitHub repository baseline and Notion project tracking setup.
+- Initial architecture documentation.

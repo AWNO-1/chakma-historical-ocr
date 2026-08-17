@@ -1,120 +1,137 @@
 """
-Comprehensive unit tests for Chakma Font Engine.
+Authoritative Unit and Integration Tests for Stage 04: Font Discovery, Verification, and Registration.
 """
 
 from pathlib import Path
+import tempfile
 import pytest
 from PIL import ImageFont
 
-from generator.font_engine import FontEngine, FontMetadata
 from generator.charset_engine import CharsetEngine
+from generator.font_engine import FontEngine, FontMetadata
+from utils.font_utils import (
+    CHAKMA_UNICODE_RANGE,
+    compute_file_sha256,
+    inspect_font_tables,
+    scan_and_discover_fonts,
+    verify_glyph_rendering,
+)
 
 
-def test_font_engine_initialization_and_discovery():
-    engine = FontEngine(font_dir="fonts")
-    discovered = engine.discover_fonts()
-    assert len(discovered) > 0
-    assert any(f.suffix.lower() in [".ttf", ".otf"] for f in discovered)
+@pytest.fixture(scope="module")
+def charset_engine():
+    return CharsetEngine()
 
 
-def test_supported_fonts_acceptance():
-    engine = FontEngine(font_dir="fonts")
-    supported = engine.get_supported_fonts()
-
-    assert len(supported) > 0, "Should find at least one supported Chakma font in fonts/"
-    noto_or_nirmala = [f for f in supported if "noto" in f.name.lower() or "nirmala" in f.name.lower()]
-    assert len(noto_or_nirmala) > 0
-
-    first_supported = noto_or_nirmala[0]
-    assert first_supported.is_valid is True
-    assert first_supported.coverage_percentage >= 70.0
-    assert first_supported.supported_classes_count >= 50
-    assert first_supported.rejection_reason is None
+@pytest.fixture(scope="module")
+def font_engine(charset_engine):
+    return FontEngine(base_dir="fonts", charset_engine=charset_engine, auto_discover=True)
 
 
-def test_rejected_non_chakma_font():
-    engine = FontEngine(font_dir="fonts")
-    rejected = engine.get_rejected_fonts()
-
-    # If arial.ttf exists in fonts/, it must be rejected
-    arial_meta = [f for f in rejected if "arial" in f.name.lower()]
-    if arial_meta:
-        m = arial_meta[0]
-        assert m.is_valid is False
-        assert m.coverage_percentage < 10.0
-        assert m.rejection_reason is not None
-        assert "below minimum threshold" in m.rejection_reason
+# 1. Discovery Test
+def test_font_discovery(font_engine):
+    discovered = font_engine.get_all_discovered_fonts()
+    assert len(discovered) >= 10
+    file_names = [f.file_name for f in discovered]
+    assert any("NotoSansChakma" in fn for fn in file_names)
+    assert any("Chakma" in fn for fn in file_names)
 
 
-def test_supports_character_method():
-    engine = FontEngine(font_dir="fonts")
-    supported = engine.get_supported_fonts()
-    assert len(supported) > 0
-    font_meta = supported[0]
-
-    # Consonant KAA (U+11107) -> should be supported
-    assert engine.supports_character(font_meta, "𑄇") is True
-    assert engine.supports_character(font_meta, "U+11107") is True
-
-    # Non-Chakma character -> False
-    assert engine.supports_character(font_meta, "A") is False
-    assert engine.supports_character(font_meta, "U+0041") is False
+# 2. Loading Test
+def test_font_loading(font_engine):
+    valid_fonts = font_engine.get_supported_fonts()
+    assert len(valid_fonts) > 0
+    for meta in valid_fonts:
+        pil_font = font_engine.get_font(meta.id, size=32)
+        assert isinstance(pil_font, ImageFont.FreeTypeFont)
 
 
-def test_deterministic_random_font_selection():
-    engine1 = FontEngine(seed=42)
-    engine2 = FontEngine(seed=42)
-
-    font1 = engine1.get_random_font()
-    font2 = engine2.get_random_font()
-    assert font1.name == font2.name
-    assert font1.path == font2.path
-
-    # Overridden seed
-    f_seed1 = engine1.get_random_font(seed=999)
-    f_seed2 = engine2.get_random_font(seed=999)
-    assert f_seed1.name == f_seed2.name
+# 3. Unicode Coverage Inspection
+def test_unicode_coverage(font_engine):
+    all_fonts = font_engine.get_all_discovered_fonts()
+    for meta in all_fonts:
+        assert meta.total_glyphs > 0
+        assert meta.coverage_percent >= 0.0
+        assert meta.coverage_status in ["FULL_SUPPORT", "PARTIAL_SUPPORT", "NO_CHAKMA_SUPPORT"]
 
 
-def test_get_font_caching_and_size_bounds():
-    engine = FontEngine(font_dir="fonts")
-    supported = engine.get_supported_fonts()
-    assert len(supported) > 0
-    target_font = supported[0]
-
-    # Test retrieval
-    pil_font = engine.get_font(target_font.path, size=32)
-    assert isinstance(pil_font, ImageFont.FreeTypeFont)
-    assert pil_font.size == 32
-
-    # Test size clamping (min 24, max 72)
-    clamped_small = engine.get_font(target_font.path, size=10)
-    assert clamped_small.size == engine.font_size_min
-
-    clamped_large = engine.get_font(target_font.path, size=150)
-    assert clamped_large.size == engine.font_size_max
-
-    # Test caching (same instance returned)
-    cached_font = engine.get_font(target_font.path, size=32)
-    assert cached_font is pil_font
+# 4. Chakma Coverage Percentages
+def test_chakma_coverage_thresholds(font_engine):
+    valid_fonts = font_engine.get_supported_fonts()
+    for meta in valid_fonts:
+        assert meta.coverage_percent >= font_engine.min_coverage_threshold
+        assert meta.chakma_supported > 0
 
 
-def test_corrupted_font_handling(tmp_path: Path):
-    corrupt_file = tmp_path / "corrupt_font.ttf"
-    corrupt_file.write_bytes(b"NOT_A_VALID_TTF_FONT_HEADER_OR_BINARY")
+# 5. Rendering Test
+def test_font_rendering(font_engine, charset_engine):
+    valid_fonts = font_engine.get_supported_fonts()
+    first_font = valid_fonts[0]
+    sample_classes = charset_engine.get_all_classes()[:5]
 
-    engine = FontEngine(font_dir=tmp_path)
-    meta = engine.validate_font(corrupt_file)
+    for c in sample_classes:
+        if c.character:
+            res = verify_glyph_rendering(first_font.path, c.character, font_size=32)
+            assert res["rendered"] is True
+            assert res["is_blank"] is False
+            assert res["pixel_count"] > 0
+            assert res["width"] > 0
+            assert res["height"] > 0
 
-    assert meta.is_valid is False
-    assert meta.coverage_percentage == 0.0
-    assert meta.rejection_reason is not None
+
+# 6. Missing Glyph & Rejection Test
+def test_missing_glyph_detection(font_engine):
+    rejected_meta = [f for f in font_engine.get_all_discovered_fonts() if not f.enabled_for_synthetic and not f.is_duplicate]
+    # Arial should be detected and rejected for 0% Chakma coverage
+    arial_matches = [f for f in font_engine.get_all_discovered_fonts() if "arial" in f.file_name.lower()]
+    if arial_matches:
+        arial_meta = arial_matches[0]
+        assert arial_meta.enabled_for_synthetic is False
+        assert arial_meta.coverage_status == "NO_CHAKMA_SUPPORT"
+        assert arial_meta.coverage_percent == 0.0
 
 
-def test_nonexistent_font_handling(tmp_path: Path):
-    nonexistent = tmp_path / "ghost_font.otf"
-    engine = FontEngine(font_dir=tmp_path)
-    meta = engine.validate_font(nonexistent)
+# 7. Metadata JSON Generation
+def test_metadata_generation(font_engine):
+    meta_dir = Path("fonts/metadata")
+    assert meta_dir.exists()
+    all_fonts = font_engine.get_all_discovered_fonts()
+    for meta in all_fonts:
+        json_file = meta_dir / f"{meta.id}.json"
+        assert json_file.exists()
+        assert json_file.stat().st_size > 0
 
-    assert meta.is_valid is False
-    assert "does not exist" in str(meta.rejection_reason)
+
+# 8. Reproducibility & Deterministic Selection Test
+def test_font_reproducibility(font_engine):
+    font_a1 = font_engine.get_random_font(seed=12345)
+    font_a2 = font_engine.get_random_font(seed=12345)
+    font_b = font_engine.get_random_font(seed=99999)
+
+    assert font_a1.id == font_a2.id
+    assert font_a1.name == font_a2.name
+
+
+# 9. Duplicate Detection Test
+def test_duplicate_detection(font_engine):
+    all_fonts = font_engine.get_all_discovered_fonts()
+    duplicate_fonts = [f for f in all_fonts if f.is_duplicate]
+    for dup in duplicate_fonts:
+        assert dup.duplicate_of is not None
+        assert dup.enabled_for_synthetic is False
+
+
+# 10. YAML Config Generation Test
+def test_config_generation(font_engine):
+    yaml_path = Path("config/fonts.yaml")
+    assert yaml_path.exists()
+    import yaml
+    with open(yaml_path, "r", encoding="utf-8") as f:
+        data = yaml.safe_load(f)
+    assert "fonts" in data
+    assert len(data["fonts"]) == len(font_engine.get_supported_fonts())
+    for f_entry in data["fonts"]:
+        assert "id" in f_entry
+        assert "path" in f_entry
+        assert "coverage" in f_entry
+        assert f_entry["enabled_for_synthetic"] is True

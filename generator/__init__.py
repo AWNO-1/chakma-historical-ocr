@@ -15,7 +15,7 @@ from generator.corpus_engine import CorpusEngine
 from generator.font_engine import FontEngine, FontMetadata
 from generator.layout_engine import LayoutEngine, LayoutConfig, PageLayout, LineLayout, CharacterLayout
 from generator.line_renderer import LineRenderer, RenderedCharacter, RenderedLine, RenderedPageLines
-from generator.background import BackgroundEngine
+from generator.background import BackgroundLibrary, BackgroundEngine, BackgroundMetadata, LoadedBackground
 from generator.augmentations import AugmentationEngine
 from generator.transform_engine import TransformEngine
 from generator.annotation_engine import AnnotationEngine
@@ -42,7 +42,10 @@ __all__ = [
     "RenderedCharacter",
     "RenderedLine",
     "RenderedPageLines",
+    "BackgroundLibrary",
     "BackgroundEngine",
+    "BackgroundMetadata",
+    "LoadedBackground",
     "AugmentationEngine",
     "TransformEngine",
     "AnnotationEngine",

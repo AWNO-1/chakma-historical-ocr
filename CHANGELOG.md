@@ -4,6 +4,19 @@ All notable changes to the Chakma Historical OCR project will be documented in t
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.5.0] - 2026-08-17 - Stage 05: Layout and Character Geometry Engine
+
+### Added
+- Authoritative `LayoutEngine` in `generator/layout_engine.py` with support for computing page margins, line placement, and character bounding boxes before rasterization.
+- Structured dataclasses `CharacterLayout`, `LineLayout`, `PageLayout`, and `LayoutConfig` for clean geometric data encapsulation.
+- Reading-order sorting and indexing assigning contiguous `0..N-1` order across all page characters.
+- Strict boundary checking guaranteeing all character bounding boxes reside within canvas boundaries without leaking.
+- Enhanced geometric utilities in `utils/geometry.py` (`BBox.is_valid`, `BBox.is_within_bounds`, `BBox.clip`, `calculate_intersection_area`).
+- Dedicated unit test suite `tests/test_layout.py` and expanded `tests/test_geometry.py` with 15 tests covering box dimensions, boundaries, reading order, line grouping, seed reproducibility, and IoU (46 tests total in project suite).
+- Geometric wireframe visualizer `utils/demo_layout.py` demonstrating ASCII 2D spatial layouts without rendering text pixels.
+- Architectural Decision Record `ADR-005-layout-geometry.md`.
+- Documentation report `docs/stages/stage_05_layout.md`.
+
 ## [0.4.0] - 2026-08-17 - Stage 04: Chakma Font Engine
 
 ### Added

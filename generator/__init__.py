@@ -3,10 +3,10 @@ Synthetic Data Generation Package for Chakma Historical OCR.
 """
 
 from generator.metadata import CharacterAnnotation, LineAnnotation, SyntheticSampleMetadata
-from generator.charset_engine import CharsetEngine
+from generator.charset_engine import CharsetEngine, ChakmaClass
 from generator.corpus_engine import CorpusEngine
-from generator.font_engine import FontEngine
-from generator.layout_engine import LayoutEngine, LayoutConfig
+from generator.font_engine import FontEngine, FontMetadata
+from generator.layout_engine import LayoutEngine, LayoutConfig, PageLayout, LineLayout, CharacterLayout
 from generator.line_renderer import LineRenderer
 from generator.background import BackgroundEngine
 from generator.augmentations import AugmentationEngine
@@ -19,10 +19,15 @@ __all__ = [
     "LineAnnotation",
     "SyntheticSampleMetadata",
     "CharsetEngine",
+    "ChakmaClass",
     "CorpusEngine",
     "FontEngine",
+    "FontMetadata",
     "LayoutEngine",
     "LayoutConfig",
+    "PageLayout",
+    "LineLayout",
+    "CharacterLayout",
     "LineRenderer",
     "BackgroundEngine",
     "AugmentationEngine",

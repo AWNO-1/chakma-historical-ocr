@@ -36,8 +36,8 @@ augmentations:
     prob: 0.5
     kernel_size: [3, 5]
   gaussian_noise:
-    prob: 0.4
-    var_limit: [10.0, 50.0]
+    prob: 0.3
+    var_limit: [0.001, 0.005]
   perspective_transform:
     prob: 0.3
     scale: [0.02, 0.05]

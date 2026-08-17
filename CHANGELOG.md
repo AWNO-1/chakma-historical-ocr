@@ -4,6 +4,18 @@ All notable changes to the Chakma Historical OCR project will be documented in t
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.4.0] - 2026-08-17 - Stage 04: Chakma Font Engine
+
+### Added
+- Authoritative `FontEngine` in `generator/font_engine.py` with automatic discovery for `.ttf` and `.otf` fonts, binary cmap parsing using `fontTools`, and FreeType descriptor caching.
+- Glyph coverage validation checking all 71 canonical Chakma script classes, calculating exact coverage percentages and isolating accepted vs rejected fonts.
+- Authentic font assets in `fonts/` including open-source `NotoSansChakma-Regular.ttf` and standard typography styles (`Nirmala.ttf`, `NirmalaB.ttf`, `NirmalaS.ttf`) achieving 100% Chakma glyph coverage.
+- Configurable font parameters in `config/synthetic.yaml` (`font_dir`, `font_size_min`, `font_size_max`, `default_font_size`, `min_coverage_threshold`).
+- Expanded test suite `tests/test_fonts.py` with 8 dedicated unit tests covering discovery, acceptance, rejection of non-supporting fonts, character support querying, deterministic random selection, caching, and size bounds (36 tests total in project suite).
+- Demonstration utility `utils/demo_fonts.py` for inspecting font discovery, glyph counts, coverage rates, and rejection reasons.
+- Architectural Decision Record `ADR-004-font-engine.md`.
+- Documentation report `docs/stages/stage_04_fonts.md`.
+
 ## [0.3.0] - 2026-08-17 - Stage 03: Chakma Corpus Engine
 
 ### Added

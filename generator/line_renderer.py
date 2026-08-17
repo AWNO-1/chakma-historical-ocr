@@ -329,14 +329,6 @@ class LineRenderer:
 
         # ------------------------------------------------------------------
         # Progressive pixel-delta bbox computation per character & diacritic.
-        #
-        # For every codepoint (consonant, independent vowel, dependent vowel
-        # sign/matra, virama/maaw, digit, punctuation):
-        # We render progressive prefixes on a canvas and extract the exact
-        # bounding box of the newly added ink pixels (diff mask).
-        # This gives ground-truth bounding boxes for ALL 71 individual classes
-        # (including diacritics positioned over or under base consonants)
-        # matching YOLO multi-class detection specifications.
         # ------------------------------------------------------------------
         rendered_chars: List[RenderedCharacter] = []
         current_word_id = 0
@@ -485,8 +477,9 @@ class LineRenderer:
         else:
             default_font_path = resolve_path(font_path)
 
-        # Authentic historical ink colors (iron-gall, walnut, charcoal, soot, sepia)
+        # Authentic historical ink colors (rubricated red, iron-gall, walnut, charcoal, soot, sepia)
         default_palettes = [
+            (140, 32, 22, 245),  # Rubricated Crimson Red
             (45, 32, 24, 245),   # Iron-gall brown
             (36, 26, 18, 250),   # Walnut dark brown
             (28, 28, 32, 255),   # Charcoal carbon ink

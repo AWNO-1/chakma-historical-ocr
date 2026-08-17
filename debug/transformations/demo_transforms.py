@@ -117,7 +117,7 @@ def create_authentic_manuscript_sample(
 ) -> tuple[Image.Image, list[BBox]]:
     """
     Renders lines onto background with authentic scribe handwriting dynamics:
-    - Title line in rubricated crimson red (#8C2018)
+    - Random rubricated crimson red (#8C2018) on random words/lines
     - Body lines in varied antique historical ink palettes (Iron-gall, Dark Walnut, Aged Sepia, Charcoal)
     - Per-character micro baseline drift and size fluctuation
     - Subtractive physical ink-fiber absorption
@@ -131,7 +131,7 @@ def create_authentic_manuscript_sample(
 
     # Distinct authentic historical ink palettes
     palettes = [
-        (140, 32, 22, 245),   # Rubricated Crimson Red (for Title/Header)
+        (140, 32, 22, 245),   # Rubricated Crimson Red
         (42, 28, 18, 250),    # Iron-gall Dark Brown
         (58, 42, 28, 235),    # Walnut Brown
         (76, 58, 42, 220),    # Faded Sepia
@@ -152,15 +152,14 @@ def create_authentic_manuscript_sample(
         # Enforce Brahmic syllable integrity (no orphaned dependent vowels / modifiers)
         line = charset.repair_syllables(raw_line)
 
-        # Select font for this line
+        # Random line font & size
         line_font_meta = rng.choice(supported_fonts)
-        base_font_size = 40 if line_idx == 0 else rng.randint(30, 36)
+        base_font_size = rng.randint(30, 36)
 
-        # Rubrication for line 0, alternating historical inks for subsequent lines
-        if line_idx == 0:
-            line_color = palettes[0]
-        else:
-            line_color = palettes[(line_idx % (len(palettes) - 1)) + 1]
+        # Base line ink color (random historical ink)
+        body_palettes = palettes[1:]  # Iron-gall, Walnut, Sepia, Charcoal, Bistre
+        line_base_color = rng.choice(body_palettes)
+        line_is_rubricated = (rng.random() < 0.15)  # 15% chance entire line is rubricated in red
 
         curr_x = 70.0 + rng.uniform(-8.0, 8.0)
         curr_y = start_y + (line_idx * line_spacing) + rng.uniform(-3.0, 3.0)
@@ -169,6 +168,10 @@ def create_authentic_manuscript_sample(
         for word in words:
             if not word:
                 continue
+
+            # Random per-word rubrication (e.g. key words, numbers, or random chance)
+            word_is_rubricated = line_is_rubricated or (rng.random() < 0.12)
+            active_color = palettes[0] if word_is_rubricated else line_base_color
 
             for char in word:
                 cid = charset.get_class_id(char)
@@ -198,8 +201,8 @@ def create_authentic_manuscript_sample(
                     by_min = gy
 
                 # Draw character with slight ink density variation
-                c_alpha = max(180, min(255, line_color[3] + rng.randint(-20, 10)))
-                char_color = (line_color[0], line_color[1], line_color[2], c_alpha)
+                c_alpha = max(180, min(255, active_color[3] + rng.randint(-20, 10)))
+                char_color = (active_color[0], active_color[1], active_color[2], c_alpha)
                 draw.text((gx, gy), char, font=glyph_font, fill=char_color)
 
                 # Bounding box

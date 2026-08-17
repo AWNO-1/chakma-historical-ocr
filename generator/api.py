@@ -145,6 +145,8 @@ class SyntheticGenerator:
             cleaned_line = "".join(
                 c for c in line if (c.isspace() or self.charset_engine.is_valid_char(c))
             ).strip()
+            # Enforce Brahmic syllable integrity (no orphaned dependent vowels / modifiers)
+            cleaned_line = self.charset_engine.repair_syllables(cleaned_line)
             if cleaned_line:
                 valid_lines.append(cleaned_line)
 

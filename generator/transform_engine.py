@@ -37,17 +37,20 @@ class GeometricTransformConfig:
     """Configuration and probabilities for geometric transformation stages."""
     enabled: bool = True
     rotation_prob: float = 0.5
-    rotation_range_deg: Tuple[float, float] = (-3.5, 3.5)
+    rotation_range_deg: Tuple[float, float] = (-7.0, 7.0)
     translation_prob: float = 0.4
-    translation_range_px: Tuple[float, float] = (-15.0, 15.0)
-    perspective_prob: float = 0.4
-    perspective_scale_range: Tuple[float, float] = (0.015, 0.045)
-    elastic_prob: float = 0.35
-    elastic_alpha_range: Tuple[float, float] = (15.0, 30.0)
+    translation_range_px: Tuple[float, float] = (-25.0, 25.0)
+    perspective_prob: float = 0.45
+    perspective_scale_range: Tuple[float, float] = (0.04, 0.09)
+    elastic_prob: float = 0.4
+    elastic_alpha_range: Tuple[float, float] = (25.0, 45.0)
     elastic_sigma_range: Tuple[float, float] = (5.0, 8.0)
-    curvature_prob: float = 0.35
-    curvature_amplitude_range: Tuple[float, float] = (8.0, 22.0)
+    curvature_prob: float = 0.4
+    curvature_amplitude_range: Tuple[float, float] = (16.0, 32.0)
     curvature_frequency_range: Tuple[float, float] = (0.8, 1.5)
+    curved_baseline_prob: float = 0.45
+    curved_baseline_amplitude_range: Tuple[float, float] = (6.0, 14.0)
+    curved_baseline_frequency_range: Tuple[float, float] = (1.5, 3.0)
     fill_color: Tuple[int, int, int] = (245, 238, 220)
 
 
@@ -447,6 +450,62 @@ def apply_curvature(
     return warped_image, transformed_boxes, params
 
 
+def apply_curved_baseline(
+    image: Image.Image,
+    bboxes: List[BBox],
+    amplitude: float = 8.0,
+    frequency: float = 2.0,
+    fill_color: Tuple[int, int, int] = (245, 238, 220),
+    seed: Optional[int] = None,
+) -> Tuple[Image.Image, List[BBox], Dict[str, Any]]:
+    """
+    Simulate natural handwriting baseline drift/curvature along text lines.
+    Applies multi-frequency wavy displacement along the horizontal axis and transforms BBoxes.
+    """
+    w, h = image.size
+    rng = np.random.default_rng(seed)
+    phase_offset = float(rng.uniform(0.0, 2 * np.pi))
+
+    grid_y, grid_x = np.indices((h, w), dtype=np.float32)
+    # Undulating baseline wave: dy(x)
+    phase = (frequency * 2.0 * np.pi * (grid_x / float(w))) + phase_offset
+    disp_y = (amplitude * np.sin(phase)).astype(np.float32)
+
+    map_x = grid_x
+    map_y = grid_y - disp_y
+
+    # 1. Remap image
+    img_arr = np.array(image.convert("RGB"))
+    warped_arr = cv2.remap(
+        img_arr,
+        map_x,
+        map_y,
+        interpolation=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=fill_color,
+    )
+    warped_image = Image.fromarray(warped_arr, mode="RGB")
+
+    # 2. Transform bounding box coordinates
+    transformed_boxes: List[BBox] = []
+    for box in bboxes:
+        quad = _box_to_quad_points(box)
+        warped_quad = quad.copy()
+        pts_phase = (frequency * 2.0 * np.pi * (quad[:, 0] / float(w))) + phase_offset
+        warped_quad[:, 1] += amplitude * np.sin(pts_phase)
+
+        new_box = _quad_points_to_bbox(warped_quad, box, w, h)
+        if new_box is not None:
+            transformed_boxes.append(new_box)
+
+    params = {
+        "amplitude": round(amplitude, 2),
+        "frequency": round(frequency, 2),
+        "phase_offset": round(phase_offset, 3),
+    }
+    return warped_image, transformed_boxes, params
+
+
 class TransformPipeline:
     """
     Unified authoritative Historical Document Transformation and Augmentation Pipeline.
@@ -554,6 +613,16 @@ class TransformPipeline:
                 )
                 applied.append("curvature")
                 all_params["curvature"] = p
+
+            # F. Curved Baseline (Line-level waviness)
+            if rng.random() < self.geom_config.curved_baseline_prob:
+                amp = rng.uniform(*self.geom_config.curved_baseline_amplitude_range)
+                freq = rng.uniform(*self.geom_config.curved_baseline_frequency_range)
+                curr_img, curr_boxes, p = apply_curved_baseline(
+                    curr_img, curr_boxes, amplitude=amp, frequency=freq, fill_color=fill, seed=rng.randint(0, 1_000_000)
+                )
+                applied.append("curved_baseline")
+                all_params["curved_baseline"] = p
 
         # ------------------------------------------------------------------
         # 2. Photometric / Optical Degradations (Image canvas only)
